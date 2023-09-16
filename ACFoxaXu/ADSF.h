@@ -9,7 +9,7 @@ string what = "HelloWord";
 string RunINFO = getselfinfo();
 string RunPath = getselfpath();
 
-string PubVar = RunPath + "\\vartemp~" + to_string(SpawnRandomNum(1111, 9999)) + ".ini";
+string 
 
 string cpause(string Notices) {
 	cout << Notices;
@@ -17,25 +17,8 @@ string cpause(string Notices) {
 	return what;
 }
 
-int CountLines(string filename)
-{
-	ifstream ReadFile;
-	int n = 0;
-	string tmp;
-	ReadFile.open(filename.c_str());//ios::in 表示以只读的方式读取文件
-	if (ReadFile.fail())//文件打开失败:返回0
-	{
-		return 0;
-	}
-	else//文件存在
-	{
-		while (getline(ReadFile, tmp, '\n'))
-		{
-			n++;
-		}
-		ReadFile.close();
-		return n;
-	}
+void clscmd() {
+	system("cls");
 }
 
 string LineReader(string File, int line_number) {
@@ -111,7 +94,7 @@ ReCheckFile:
 	return retinfo;
 }
 
-string TransVar(string Info) {
+string TransVar(string Info,string PubVar) {
 	if (_access(PubVar.c_str(), 0)) {
 		return Info;
 	}
@@ -184,14 +167,16 @@ string WriteNewMRA(string Dict, string Head, string INFO) {
 }
 
 //正常退出输出 0.异常输出 1
-int ScriptRun(string File) {
+int ScriptRun(string File,int vercode,int startline,string PubVar) {
 	//初始化环境
 	ofstream logs;
-	logs.open("open.log");
+	string logfile = logfile = "log~" + to_string(SpawnRandomNum(11111, 99999)) + "~record.log";
+	logs.open(logfile);
 	string EPoint = "ADSF~para";
-	WriteIntGlobal(EPoint, 2);
+	WriteIntGlobal(EPoint,startline);
 
 	//StartRun
+	IncludePoints:
 
 	logs << "start run" << endl;
 	logs << "Script :  " << File << endl;
@@ -204,19 +189,124 @@ BackRoll:
 	//cout << cl_str << endl;
 
 	string GetLineData = LineReader(File, CURRLINE);
-	string getlineinfo = TransVar(GetLineData);
+	string getlineinfo = TransVar(GetLineData,PubVar);
 	logs << "Line :  " << cl_str << " . INFO :  " << getlineinfo << endl;
 	
 
 	//cout << getlineinfo << endl;
 
-	if (int a = checkChar(getlineinfo, "///") == 1) {
+	if (checkChar(getlineinfo, "///") == 1) {
 		logs << "Skip" << endl;
 		CURRLINE++;
 		WriteIntGlobal(EPoint, CURRLINE);
-		goto BackRoll;	
+		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$$Prints") == 1) {
+	if (checkChar(getlineinfo, "#load ") == 1) {
+		//cout << "Load Part" << endl;
+		logs << "Load Other Part" << endl;
+		string p1 = CleanAuto(getlineinfo, "#load ");
+		//cout << "p1 = _" << p1 << "_" << endl;
+
+		//查找 p1
+		string SPoint = "Find~load";
+		WriteIntGlobal(SPoint, 2);
+
+	ASBackRoll:
+		//获取函数
+		int XCURRLINE = GetIntGlobal(SPoint);
+		string cl_strx = to_string(XCURRLINE);
+
+		//cout << cl_str << endl;
+
+		string GetLineData = LineReader(File, XCURRLINE);
+		//cout << "Line " << cl_strx << "  INFO :  _" << GetLineData << "_" << endl;
+
+		if (GetLineData == "overline") {
+			cout << endl;
+			cout << endl;
+			cout << "Script Crash.." << endl;
+			cout << "Unable to load from :  " << File << endl;
+			cout << "Head :  _" << p1 << "_, Not Found" << endl;
+			remove(PubVar.c_str());
+			return 1;
+		}
+		if (GetLineData == p1) {
+			//cout << "XCURRLINE :  " << to_string(XCURRLINE) << endl;
+			logs << "Load Part :  " << p1 << endl;
+			logs << "Line :  " << XCURRLINE << endl;
+			WriteIntGlobal(EPoint, XCURRLINE);
+			goto BackRoll;
+		}
+		XCURRLINE++;
+		WriteIntGlobal(SPoint, XCURRLINE);
+		goto ASBackRoll;
+		//END p1
+
+	}
+	if (checkChar(getlineinfo, "#Include") == 1) {
+		logs << "Try Include other part" << endl;
+		string p1 = CleanAuto(getlineinfo, "#Include(\"");
+		string p2 = CleanAuto(p1, "\");");
+		string out = Replace(p2, "\",\"", " ");
+
+		string FileInclude = cutlineblock(out, 1);
+		string LoadPart = cutlineblock(out, 2);
+
+		if (_access(FileInclude.c_str(), 0)) {
+			cout << endl;
+			cout << endl;
+			cout << "Error, Script Try To load a Null Include. Line :  " << cl_str << endl;
+			cout << "Unable to load from :  " << FileInclude << endl;
+			cout << "File :  _" << FileInclude << "_, Not Found" << endl;
+			remove(PubVar.c_str());
+			return 1;
+		}
+		///PCA 1
+
+		//查找 p1
+		string SPoint = "Find~Include";
+		WriteIntGlobal(SPoint, 2);
+
+	ANBackRoll:
+		//获取函数
+		int XCURRLINE = GetIntGlobal(SPoint);
+		string cl_strx = to_string(XCURRLINE);
+
+		//cout << cl_str << endl;
+
+		string GetLineData = LineReader(FileInclude, XCURRLINE);
+		//cout << "Line " << cl_strx << "  INFO :  _" << GetLineData << "_" << endl;
+
+		if (GetLineData == "overline") {
+			cout << endl;
+			cout << endl;
+			cout << "Error, Script Try To load a Null Include. Line :  " << cl_str << endl;
+			cout << "Unable to load from :  " << File << endl;
+			cout << "Head :  _" << LoadPart << "_, Found Failed" << endl;
+			remove(PubVar.c_str());
+			return 1;
+		}
+		//cout << "_" << GetLineData << "_,_" << LoadPart << "_" << endl;
+		if (GetLineData == LoadPart) {
+			//cout << "XCURRLINE :  " << to_string(XCURRLINE) << endl;
+			logs << "Include :  " << FileInclude << endl;
+			logs << "Include Part :  " << LoadPart << "  Line :  " << cl_strx << endl;
+			logs << "-----------------------------------------(Include : " << FileInclude  << " )---------------------------------------- - " << endl;
+			ScriptRun(FileInclude, vercode, XCURRLINE, PubVar);
+			logs << "-----------------------------------------(Include : " << FileInclude << " )---------------------------------------- - " << endl;
+
+			CURRLINE++;
+			WriteIntGlobal(EPoint, CURRLINE);
+			goto BackRoll;
+		}
+		XCURRLINE++;
+		WriteIntGlobal(SPoint, XCURRLINE);
+		goto ANBackRoll;
+
+		//PCA End
+
+	}
+	if (checkChar(getlineinfo, "$$Prints") == 1) {
 		//输出文档
 		string p1 = CleanAuto(getlineinfo, "$$Prints(\"");
 		string out = CleanAuto(p1, "\");");
@@ -227,7 +317,7 @@ BackRoll:
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$$Cout") == 1) {
+	if (checkChar(getlineinfo, "$$Cout") == 1) {
 		//输出文档
 		string p1 = CleanAuto(getlineinfo, "$$Cout(\"");
 		string out = CleanAuto(p1, "\");");
@@ -238,7 +328,7 @@ BackRoll:
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$$MsgBox") == 1) {
+	if (checkChar(getlineinfo, "$$MsgBox") == 1) {
 		//输出文档
 		string p1 = CleanAuto(getlineinfo, "$$MsgBox(\"");
 		string p2 = CleanAuto(p1, "\");");
@@ -278,14 +368,30 @@ BackRoll:
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$$endl") == 1) {
+	if (checkChar(getlineinfo, "$$endl") == 1) {
 		cout << endl;
 		logs << "Endl Line" << endl;
 		CURRLINE++;
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$Windows.CMD") == 1) {
+	if (checkChar(getlineinfo, "$~") == 1) {
+		CURRLINE++;
+		WriteIntGlobal(EPoint, CURRLINE);
+		goto BackRoll;
+	}
+	if (checkChar(getlineinfo, "$pause") == 1) {
+		string p1 = CleanAuto(getlineinfo, "$pause(\"");
+		string out = CleanAuto(p1, "\");");
+		cout << endl;
+		logs << "Pause. Notice :   " << out << endl;
+		cpause(out);
+		cout << endl;
+		CURRLINE++;
+		WriteIntGlobal(EPoint, CURRLINE);
+		goto BackRoll;
+	}
+	if (checkChar(getlineinfo, "$Windows.CMD") == 1) {
 		//Windows CMD
 		string p1 = CleanAuto(getlineinfo, "$Windows.CMD(\"");
 		string out = CleanAuto(p1, "\");");
@@ -295,12 +401,14 @@ BackRoll:
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$end") == 1) {
+	if (checkChar(getlineinfo, "#end") == 1) {
 		logs << "Script End Task" << endl;
 		remove(PubVar.c_str());
+		logs.close();
+		remove(logfile.c_str());
 		return 0;
 	}
-	if (int a = checkChar(getlineinfo, "$$SetConTitle") == 1) {
+	if (checkChar(getlineinfo, "$$SetConTitle") == 1) {
 		//输出文档
 		string p1 = CleanAuto(getlineinfo, "$$SetConTitle(\"");
 		string out = CleanAuto(p1, "\");");
@@ -310,7 +418,7 @@ BackRoll:
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$$Timeout") == 1) {
+	if (checkChar(getlineinfo, "$$Timeout") == 1) {
 		//输出文档
 		string p1 = CleanAuto(getlineinfo, "$$Timeout(\"");
 		string out = CleanAuto(p1, "\");");
@@ -322,18 +430,76 @@ BackRoll:
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$$CleanCon") == 1) {
+	if (checkChar(getlineinfo, "$cls") == 1) {
 		system("cls");
 		logs << "Cls Console" << endl;
 		CURRLINE++;
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
+	if (checkChar(getlineinfo, "#mgrver") == 1) {
+		//输出文档
+		string p1 = CleanAuto(getlineinfo, "#mgrver");
+		logs << "This Script only running on :   " << p1 << endl;
+		int curver = atoi(p1.c_str());
+		if (curver == vercode){}
+		else {
+			string VNIF = to_string(vercode);
+			cout << "Warning This Script Only Running on :   " << p1 << endl;
+			cout << "Current ADSF Version is :   " << VNIF << endl;
+			cpause("press any key to Exit");
+			remove(PubVar.c_str());
+			logs.close();
+			remove(logfile.c_str());
+			return 0;
+		}
+
+		CURRLINE++;
+		WriteIntGlobal(EPoint, CURRLINE);
+		goto BackRoll;
+	}
+	if (checkChar(getlineinfo, "$Type ") == 1) {
+		logs << "Type Text File " << endl;
+		string settype = CleanAuto(getlineinfo, "$Type ");
+		if (_access(settype.c_str(), 0)) {
+			cout << "Missing Text File :  " << settype << endl;
+			cout << "Cannot Type File" << endl;
+			logs << "Error. End Type " << endl;
+			CURRLINE++;
+			WriteIntGlobal(EPoint, CURRLINE);
+			goto BackRoll;
+		}
+
+		//编排
+		logs << "Type File :  " << settype << endl;
+		string rootd = "$TypeList~Line";
+		WriteIntGlobal(rootd, 1);
+
+		BackRead:
+		//read
+		int currentline = GetIntGlobal(rootd);
+		string readtxt = LineReader(settype, currentline);
+		if (readtxt == "overline") {
+			// Read OK
+			logs << "Type OK. Total Line :  " << to_string(currentline--) << endl;
+			CURRLINE++;
+			WriteIntGlobal(EPoint, CURRLINE);
+			goto BackRoll;
+		}
+		string outtext = TransVar(readtxt, PubVar);
+
+		//output
+		cout << outtext << endl;
+
+		currentline++;
+		WriteIntGlobal(rootd, currentline);
+		goto BackRead;
+	}
 
 	//WindowsAPI
 
 	//创建文件夹
-	if (int a = checkChar(getlineinfo, "$$winapi.md") == 1) {
+	if (checkChar(getlineinfo, "$$winapi.md") == 1) {
 		string p1 = CleanAuto(getlineinfo, "$$winapi.md(\"");
 		string out = CleanAuto(p1, "\");");
 
@@ -344,7 +510,7 @@ BackRoll:
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$$winapi.rd") == 1) {
+	if (checkChar(getlineinfo, "$$winapi.rd") == 1) {
 		string p1 = CleanAuto(getlineinfo, "$$winapi.rd(\"");
 		string out = CleanAuto(p1, "\");");
 
@@ -356,7 +522,7 @@ BackRoll:
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$$winapi.urlmon") == 1) {
+	if (checkChar(getlineinfo, "$$winapi.urlmon") == 1) {
 		logs << "URLDownload" << endl;
 		string p1 = Replace(getlineinfo, "\",\"", " ");
 		string p2 = CleanAuto(p1, "$$winapi.urlmon(\"");
@@ -394,7 +560,7 @@ BackRoll:
 	}
 
 	//变量
-	if (int a = checkChar(getlineinfo, "$$var.edit") == 1) {
+	if (checkChar(getlineinfo, "$$var.edit") == 1) {
 
 		string p1 = CleanAuto(getlineinfo, "$$var.edit(\"");
 		string p2 = CleanAuto(p1, "\");");
@@ -410,7 +576,7 @@ BackRoll:
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
 	}
-	if (int a = checkChar(getlineinfo, "$$var.del") == 1) {
+	if (checkChar(getlineinfo, "$$var.del") == 1) {
 
 		string p1 = CleanAuto(GetLineData, "$$var.del(\"");
 		string out = CleanAuto(p1, "\");");
@@ -423,12 +589,34 @@ BackRoll:
 		goto BackRoll;
 	}
 
+	if (checkChar(getlineinfo, "$$GetCin") == 1) {
+
+		string p1 = CleanAuto(getlineinfo, "$$GetCin(\"");
+		string p2 = CleanAuto(p1, "\");");
+		string out = Replace(p2, "\",\"", " ");
+
+		string svar = cutlineblock(out, 1);
+		string outinfo = cutlineblock(out, 2);
+
+		string varinfo;
+		cout << outinfo;
+		getline(cin,varinfo);
+
+		WriteNewMRA(PubVar, "MRALIST", svar);
+		writeini(PubVar, "VarST", svar, varinfo);
+
+		CURRLINE++;
+		WriteIntGlobal(EPoint, CURRLINE);
+		goto BackRoll;
+	}
+
 	//无效断流区域
 	if (getlineinfo == "overline") {
 	    	logs << "Over Line Error" << endl;
 	     	remove(PubVar.c_str());
 		    cout << endl;
 			cout << "Script Not Set Exist API" << endl;
+			remove(PubVar.c_str());
 			return 1;
 	}
 	if (getlineinfo == "") {

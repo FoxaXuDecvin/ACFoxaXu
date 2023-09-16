@@ -28,16 +28,25 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\LOGO.ico">
-      <Filter>资源文件</Filter>
-    </Image>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="ACF.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TransLine.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Install.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\CA.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\Fox.ico">
+      <Filter>资源文件</Filter>
+    </Image>
+    <Image Include="..\..\Night.ico">
+      <Filter>资源文件</Filter>
+    </Image>
   </ItemGroup>
 </Project>
