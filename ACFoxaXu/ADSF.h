@@ -9,7 +9,8 @@ string what = "HelloWord";
 string RunINFO = getselfinfo();
 string RunPath = getselfpath();
 
-string 
+string Version = "Hans Core";
+string ComVer = "2023/9/17";
 
 string cpause(string Notices) {
 	cout << Notices;
@@ -170,13 +171,12 @@ string WriteNewMRA(string Dict, string Head, string INFO) {
 int ScriptRun(string File,int vercode,int startline,string PubVar) {
 	//初始化环境
 	ofstream logs;
-	string logfile = logfile = "log~" + to_string(SpawnRandomNum(11111, 99999)) + "~record.log";
+	string logfile = "log~" + to_string(SpawnRandomNum(11111, 99999)) + "~record.log";
 	logs.open(logfile);
 	string EPoint = "ADSF~para";
 	WriteIntGlobal(EPoint,startline);
 
 	//StartRun
-	IncludePoints:
 
 	logs << "start run" << endl;
 	logs << "Script :  " << File << endl;
@@ -291,9 +291,7 @@ BackRoll:
 			//cout << "XCURRLINE :  " << to_string(XCURRLINE) << endl;
 			logs << "Include :  " << FileInclude << endl;
 			logs << "Include Part :  " << LoadPart << "  Line :  " << cl_strx << endl;
-			logs << "-----------------------------------------(Include : " << FileInclude  << " )---------------------------------------- - " << endl;
 			ScriptRun(FileInclude, vercode, XCURRLINE, PubVar);
-			logs << "-----------------------------------------(Include : " << FileInclude << " )---------------------------------------- - " << endl;
 
 			CURRLINE++;
 			WriteIntGlobal(EPoint, CURRLINE);
@@ -319,8 +317,7 @@ BackRoll:
 	}
 	if (checkChar(getlineinfo, "$$Cout") == 1) {
 		//输出文档
-		string p1 = CleanAuto(getlineinfo, "$$Cout(\"");
-		string out = CleanAuto(p1, "\");");
+		string out = CleanAuto(getlineinfo, "$$Cout ");
 		printf(out.c_str());
 		logs << "Cout :  " << out << endl;
 		cout << endl;
@@ -494,6 +491,100 @@ BackRoll:
 		currentline++;
 		WriteIntGlobal(rootd, currentline);
 		goto BackRead;
+	}
+
+	//Calcium api
+	if (checkChar(getlineinfo, "$ApplyVar") == 1) {
+		string p1 = CleanAuto(getlineinfo, "$ApplyVar(\"");
+		string p2 = CleanAuto(p1, "\");");
+		string out = Replace(p2, "\",\"", " ");
+
+		string SelectVar = cutlineblock(out, 1);
+		string WriteVar = cutlineblock(out, 2);
+
+		if (SelectVar == "#$Version~calcium$") {
+			WriteNewMRA(PubVar, "MRALIST", WriteVar);
+			writeini(PubVar, "VarST", WriteVar,Version );
+			CURRLINE++;
+			WriteIntGlobal(EPoint, CURRLINE);
+			goto BackRoll;
+		}
+		if (SelectVar == "#$VersionCode~calcium$") {
+			WriteNewMRA(PubVar, "MRALIST", WriteVar);
+			writeini(PubVar, "VarST", WriteVar, to_string(vercode));
+			CURRLINE++;
+			WriteIntGlobal(EPoint, CURRLINE);
+			goto BackRoll;
+		}
+		if (SelectVar == "#$CalciumRunPath$") {
+			WriteNewMRA(PubVar, "MRALIST", WriteVar);
+			writeini(PubVar, "VarST", WriteVar, getselfpath());
+			CURRLINE++;
+			WriteIntGlobal(EPoint, CURRLINE);
+			goto BackRoll;
+		}
+		if (SelectVar == "#$CalciumCore$") {
+			WriteNewMRA(PubVar, "MRALIST", WriteVar);
+			writeini(PubVar, "VarST", WriteVar, getselfinfo());
+			CURRLINE++;
+			WriteIntGlobal(EPoint, CURRLINE);
+			goto BackRoll;
+		}
+		if (SelectVar == "#$CalciumReleaseTime$") {
+			WriteNewMRA(PubVar, "MRALIST", WriteVar);
+			writeini(PubVar, "VarST", WriteVar, ComVer);
+			CURRLINE++;
+			WriteIntGlobal(EPoint, CURRLINE);
+			goto BackRoll;
+		}
+
+		WriteNewMRA(PubVar, "MRALIST", WriteVar);
+		writeini(PubVar, "VarST", WriteVar,"Null");
+		CURRLINE++;
+		WriteIntGlobal(EPoint, CURRLINE);
+		goto BackRoll;
+	}
+	if (checkChar(getlineinfo, "$WinEnv") == 1) {
+		logs << "Try Get WinEnv. Method : V" << endl;
+		string p1 = CleanAuto(getlineinfo, "$WinEnv(\"");
+		string p2 = CleanAuto(p1, "\");");
+		string out = Replace(p2, "\",\"", " ");
+
+		string WinEnvS = cutlineblock(out, 1);
+		string WriteVar = cutlineblock(out, 2);
+		logs << "WinEnv Name :  _" << WinEnvS << "_ .  Record Name :  _" << WriteVar << "_" << endl;
+		
+		string WinEnv = getwinenvfast(WinEnvS.c_str());
+
+		logs << "Win Env Return :   _" << WinEnv << "_." << endl;
+
+		WriteNewMRA(PubVar, "MRALIST", WriteVar);
+		writeini(PubVar, "VarST", WriteVar, WinEnv);
+
+		CURRLINE++;
+		WriteIntGlobal(EPoint, CURRLINE);
+		goto BackRoll;
+	}
+	if (checkChar(getlineinfo, "$AWinEnv") == 1) {
+		logs << "Try Get WinEnv. Method : A" << endl;
+		string p1 = CleanAuto(getlineinfo, "$AWinEnv(\"");
+		string p2 = CleanAuto(p1, "\");");
+		string out = Replace(p2, "\",\"", " ");
+
+		string WinEnvS = cutlineblock(out, 1);
+		string WriteVar = cutlineblock(out, 2);
+		logs << "WinEnv Name :  _" << WinEnvS << "_ .  Record Name :  _" << WriteVar << "_" << endl;
+
+		string WinEnv = getwinenv(WinEnvS.c_str());
+
+		logs << "Win Env Return :   _" << WinEnv << "_." << endl;
+
+		WriteNewMRA(PubVar, "MRALIST", WriteVar);
+		writeini(PubVar, "VarST", WriteVar, WinEnv);
+
+		CURRLINE++;
+		WriteIntGlobal(EPoint, CURRLINE);
+		goto BackRoll;
 	}
 
 	//WindowsAPI

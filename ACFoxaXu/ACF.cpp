@@ -6,8 +6,6 @@ string PATH = getselfpath();
 string COREFILE = getselfinfo();
 
 int vercode = 1003;
-string Version = "Hans Core";
-string ComVer = "2023/9/15";
 
 string VCNum = to_string(vercode);
 string ConfigINI = PATH + "\\config.ini";
@@ -16,9 +14,9 @@ string PubVar = RunPath + "\\vartemp~" + to_string(SpawnRandomNum(1111, 9999)) +
 
 int main(int argc, char*argv[]) {
 	if (argc == 1) {
-		cpause("Press any key to Close");
-		cout << endl;
-		ShellExecute(0, "open", "cmd", 0, PATH.c_str(), SW_SHOW);
+		string cmd = "\"\"" + COREFILE + "\" -capt \"" + PATH + readini(PATH + "\\config.ini", "default", "nopara")+"\"\"";
+		cout << "Load :  " << cmd << endl;
+		system(cmd.c_str());
 		return 0;
 	}
 	// P <1> <2>
