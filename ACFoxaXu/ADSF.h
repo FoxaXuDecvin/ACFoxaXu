@@ -65,34 +65,97 @@ string CleanAuto(string info, string replaceword) {
 }
 
 string cutlineblock(string lines, int line) {
-	string randfilename = RunPath +  "\\cget" + to_string(SpawnRandomNum(1111, 9999)) + ".ini";
 
-	string CoreFile = RunPath + "\\TransLine.exe";
-	string parmaset = randfilename + " " + lines;
-	if (_access(CoreFile.c_str(), 0)) {
-		cout << "TransLine Missing, Please try reinstall Access Center" << endl;
-		cout << "File Path :  " << CoreFile << endl;
-		cout << "ERROR" << endl;
-		return "TLError";
-	}
-	ShellExecute(0, "open", CoreFile.c_str(), parmaset.c_str(), 0, SW_HIDE);
-
-ReCheckFile:
-	Sleep(50);
-
-	string readinis = "P" + to_string(line);
-
-	if (_access(randfilename.c_str(), 0)) {
-		goto ReCheckFile;
-	}
-	string retinfo = readini(randfilename, "TransLine", readinis);
-	
-	remove(randfilename.c_str());
-
-	if (retinfo == "readini-failed") {
+	if (line == NULL) {
 		return "NULL";
 	}
-	return retinfo;
+	if (line < 0) {
+		return "MinSetFailed";
+	}
+	if (line > 10) {
+		return "MaxSetFailed";
+	}
+
+	char* Slinechar = nullptr;
+	char* Slinecut = nullptr;
+
+	const char* STR_Line = nullptr;
+	const char* old_Line = nullptr;
+
+	string Rep_INFO = " ";
+	old_Line = lines.c_str();
+	STR_Line = Rep_INFO.c_str();
+
+	Slinechar = const_cast<char*>(STR_Line);
+	Slinecut = const_cast<char*>(old_Line);
+
+	string strback;
+	int stepstart = 1;
+
+	WriteIntGlobal("StepRoll", 1);
+
+BackstepP:
+	int curfind = GetIntGlobal("StepRoll");
+
+	//Start
+	string a = strtok(Slinecut, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	//P2start
+	curfind++;
+	a = strtok(NULL, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	curfind++;
+	a = strtok(NULL, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	curfind++;
+	a = strtok(NULL, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	curfind++;
+	a = strtok(NULL, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	curfind++;
+	a = strtok(NULL, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	curfind++;
+	a = strtok(NULL, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	curfind++;
+	a = strtok(NULL, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	curfind++;
+	a = strtok(NULL, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	curfind++;
+	a = strtok(NULL, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	
+	//END
+
+	curfind++;
+	WriteIntGlobal("StepRoll",curfind);
+	goto BackstepP;
+
+	return "failed~s";
 }
 
 string TransVar(string Info,string PubVar) {
@@ -495,16 +558,24 @@ BackRoll:
 
 	//Calcium api
 	if (checkChar(getlineinfo, "$ApplyVar") == 1) {
+
+		logs << "$APPLYVAR ~ Processing" << endl;
+
 		string p1 = CleanAuto(getlineinfo, "$ApplyVar(\"");
 		string p2 = CleanAuto(p1, "\");");
 		string out = Replace(p2, "\",\"", " ");
 
+		logs << "Clean Command :   " << out << endl;
+
 		string SelectVar = cutlineblock(out, 1);
 		string WriteVar = cutlineblock(out, 2);
+
+		logs << "Select Var :  _" << SelectVar << "_ .   Write Var :  _" << WriteVar << "_  " << endl;
 
 		if (SelectVar == "#$Version~calcium$") {
 			WriteNewMRA(PubVar, "MRALIST", WriteVar);
 			writeini(PubVar, "VarST", WriteVar,Version );
+			logs << "Get Var OK" << endl;
 			CURRLINE++;
 			WriteIntGlobal(EPoint, CURRLINE);
 			goto BackRoll;
@@ -512,6 +583,7 @@ BackRoll:
 		if (SelectVar == "#$VersionCode~calcium$") {
 			WriteNewMRA(PubVar, "MRALIST", WriteVar);
 			writeini(PubVar, "VarST", WriteVar, to_string(vercode));
+			logs << "Get Var OK" << endl;
 			CURRLINE++;
 			WriteIntGlobal(EPoint, CURRLINE);
 			goto BackRoll;
@@ -519,6 +591,7 @@ BackRoll:
 		if (SelectVar == "#$CalciumRunPath$") {
 			WriteNewMRA(PubVar, "MRALIST", WriteVar);
 			writeini(PubVar, "VarST", WriteVar, getselfpath());
+			logs << "Get Var OK" << endl;
 			CURRLINE++;
 			WriteIntGlobal(EPoint, CURRLINE);
 			goto BackRoll;
@@ -526,6 +599,7 @@ BackRoll:
 		if (SelectVar == "#$CalciumCore$") {
 			WriteNewMRA(PubVar, "MRALIST", WriteVar);
 			writeini(PubVar, "VarST", WriteVar, getselfinfo());
+			logs << "Get Var OK" << endl;
 			CURRLINE++;
 			WriteIntGlobal(EPoint, CURRLINE);
 			goto BackRoll;
@@ -533,6 +607,7 @@ BackRoll:
 		if (SelectVar == "#$CalciumReleaseTime$") {
 			WriteNewMRA(PubVar, "MRALIST", WriteVar);
 			writeini(PubVar, "VarST", WriteVar, ComVer);
+			logs << "Get Var OK" << endl;
 			CURRLINE++;
 			WriteIntGlobal(EPoint, CURRLINE);
 			goto BackRoll;
@@ -540,6 +615,7 @@ BackRoll:
 
 		WriteNewMRA(PubVar, "MRALIST", WriteVar);
 		writeini(PubVar, "VarST", WriteVar,"Null");
+		logs << "Get Var Failed. Null Select" << endl;
 		CURRLINE++;
 		WriteIntGlobal(EPoint, CURRLINE);
 		goto BackRoll;
