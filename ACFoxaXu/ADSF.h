@@ -15,8 +15,14 @@ string ComVer = "2023/9/17";
 string cpause(string Notices) {
 	cout << Notices;
 	system("pause >nul");
+	cout << endl;
 	return what;
 }
+
+class ClearType {
+	int Line;
+	string TypeData;
+};
 
 void clscmd() {
 	system("cls");

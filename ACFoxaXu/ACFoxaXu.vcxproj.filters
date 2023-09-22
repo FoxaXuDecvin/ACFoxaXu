@@ -40,6 +40,9 @@
     <ClCompile Include="Debug.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Updater.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="..\..\CA.ico">

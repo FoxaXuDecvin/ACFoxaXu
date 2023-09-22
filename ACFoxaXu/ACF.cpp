@@ -12,6 +12,63 @@ string ConfigINI = PATH + "\\config.ini";
 string TempCAPT = getwinenvfast("temp") + "\\CalciumPackage\\" + to_string(SpawnRandomNum(11111111, 99999999));
 string PubVar = RunPath + "\\vartemp~" + to_string(SpawnRandomNum(1111, 9999)) + ".ini";
 
+//成功返回 1，失败返回 0
+int packloader(string packfile,string carun,string TCAPT) {
+	//start
+	if (_access(packfile.c_str(), 0)) {
+		cout << "Package File is Not Exist" << endl;
+		return 0;
+	}
+	// Ready
+	//解压7z
+	mdfolder(TCAPT);
+
+	n7zUNZIP(PATH + readini(ConfigINI, "7z", "n7zcore"), packfile, TCAPT, "0");
+
+	string CaptINI = TCAPT + "\\capt.ini";
+	if (_access(CaptINI.c_str(), 0)) {
+		cout << "Capt INI Null" << endl;
+		return 0;
+	}
+
+	SetCurrentDirectory(TCAPT.c_str());
+
+	if (carun == "#default") {
+		// SAT
+		if (_access(readini(CaptINI, "pubvar", "default").c_str(), 0)) {
+			cout << "Default CAScript Null" << endl;
+			return 0;
+		}
+
+		int errlevel = ScriptRun(readini(CaptINI, "pubvar", "default").c_str(), vercode, 2, CaptINI);
+		if (errlevel == 1) {
+			cout << "Script Exception" << endl;
+			return 0;
+		}
+		cout << endl;
+		SetCurrentDirectory(PATH.c_str());
+
+		return 1;
+		// END
+	}
+
+	if (_access(carun.c_str(), 0)) {
+		cout << "Failed to Load :  " << carun << endl;
+		return 0;
+	}
+
+	int errlevel = ScriptRun(carun, vercode, 2, CaptINI);
+	if (errlevel == 1) {
+		cout << "Script Exception" << endl;
+		return 0;
+	}
+
+	cout << endl;
+	SetCurrentDirectory(PATH.c_str());
+
+	return 1;
+}
+
 int main(int argc, char*argv[]) {
 	if (argc == 1) {
 		string cmd = "\"\"" + COREFILE + "\" -capt \"" + PATH + readini(PATH + "\\config.ini", "default", "nopara")+"\"\"";
@@ -52,7 +109,6 @@ int main(int argc, char*argv[]) {
 				system("assoc .cascript=CalciumScript");
 				system("assoc .capt=CalciumPackage");
 				cout << "Complete" << endl;
-				system("pause");
 				return 0;
 			}
 			ShellExecute(0, "runas", COREFILE.c_str(), "reg", 0, SW_SHOW);
@@ -63,7 +119,6 @@ int main(int argc, char*argv[]) {
 				WinExec("reg delete HKEY_CLASSES_ROOT\\CalciumScript /f", SW_SHOW);
 				WinExec("reg delete HKEY_CLASSES_ROOT\\CalciumPackage /f", SW_SHOW);
 				cout << "Complete" << endl;
-				system("pause");
 				return 0;
 			}
 			ShellExecute(0, "runas", COREFILE.c_str(), "unreg", 0, SW_SHOW);
@@ -109,70 +164,18 @@ int main(int argc, char*argv[]) {
 		al++;
 		string ParaPack = argv[al];
 		if (ParaChar == "-capt") {
-			if(_access(ParaPack.c_str(),0)) {
-				cout << "Cannot Load Calcium Package:  " << ParaPack << endl;
-				cout << "Check your type and try again" << endl;
-				cpause("Press any key to Close");
-				cout << endl;
+			int packrt = packloader(ParaPack, "#default", TempCAPT);
+			if (packrt == 1) {
+				// OK
 				return 0;
-			}
-
-			if (_access(ConfigINI.c_str(), 0)) {
-				cout << "Config File is missing" << endl;
-				cout << "Please Try to reinstall Calcium" << endl;
-				cpause("Press any key to Exit");
-				return 0;
-			}
-
-			//解压7z
-			rmfolder(TempCAPT);
-			RMTCAP:
-			if (existfolder(TempCAPT)) {
-				Sleep(100);
-				goto RMTCAP;
 			}
 			else {
-				mdfolder(TempCAPT);
-			}
-			Sleep(100);
-			n7zUNZIP(PATH + readini(ConfigINI, "7z", "n7zcore"), ParaPack, TempCAPT, "0");
-			Sleep(200);
-			string CaptINI = TempCAPT + "\\capt.ini";
-			if (_access(CaptINI.c_str(), 0)) {
-				cout << "Cannot Load Calcium Package:  " << ParaPack << endl;
-				cout << "This Package is Null" << endl;
-				cpause("Press any key to Close");
-				cout << endl;
-				rmfolder(TempCAPT);
+				cout << "-------------------------------------------------------------------" << endl;
+				cout << "Error Report..." << endl;
+				cout << "Press any key to Exit" << endl;
+				cpause("maybe its not a big problem");
 				return 0;
 			}
-
-			SetCurrentDirectory(TempCAPT.c_str());
-		
-			if (_access(readini(CaptINI, "pubvar", "default").c_str(), 0)) {
-				cout << "Cannot Load Calcium Package:  " << ParaPack << endl;
-				cout << "Package Default Failed Loader :  " << readini(CaptINI, "pubvar", "default") << endl;
-				cpause("Press any key to Close");
-				cout << endl;
-				rmfolder(TempCAPT);
-				return 0;
-			}
-
-			int errlevel = ScriptRun(readini(CaptINI, "pubvar", "default"), vercode,2,CaptINI);
-			if (errlevel == 1) {
-				cout << endl;
-				cout << "-------------------------------------------------------------------------------" << endl;
-				cout << "File Exit Error :  " << readini(CaptINI, "pubvar", "default") << endl;
-				cout << "Check Log to find problem" << endl;
-				cpause("Press any key to Close");
-				cout << endl;
-			}
-
-			cout << endl;
-			SetCurrentDirectory(PATH.c_str());
-			Sleep(300);
-			rmfolder(TempCAPT);
-			return 0;
 		}
 		if (ParaChar == "-casp") {
 			if (_access(ParaPack.c_str(), 0)) {
@@ -220,69 +223,18 @@ int main(int argc, char*argv[]) {
 		string ParaLoadSign = argv[al];
 
 		if (ParaChar == "-capt") {
-			if (_access(ParaPack.c_str(), 0)) {
-				cout << "Cannot Load Calcium Package:  " << ParaPack << endl;
-				cout << "Check your type and try again" << endl;
-				cpause("Press any key to Close");
-				cout << endl;
+			int packrt = packloader(ParaPack, ParaLoadSign, TempCAPT);
+			if (packrt == 1) {
+				// OK
 				return 0;
-			}
-
-			if (_access(ConfigINI.c_str(), 0)) {
-				cout << "Config File is missing" << endl;
-				cout << "Please Try to reinstall Calcium" << endl;
-				cpause("Press any key to Exit");
-				return 0;
-			}
-
-			//解压7z
-			rmfolder(TempCAPT);
-		RMTCAP2:
-			if (existfolder(TempCAPT)) {
-				Sleep(100);
-				goto RMTCAP2;
 			}
 			else {
-				mdfolder(TempCAPT);
-			}
-			Sleep(100);
-			n7zUNZIP(PATH + readini(ConfigINI, "7z", "n7zcore"), ParaPack, TempCAPT, "0");
-			Sleep(200);
-			string CaptINI = TempCAPT + "\\capt.ini";
-			if (_access(CaptINI.c_str(), 0)) {
-				cout << "Cannot Load Calcium Package:  " << ParaPack << endl;
-				cout << "This Package is Null" << endl;
-				cpause("Press any key to Close");
-				cout << endl;
-				rmfolder(TempCAPT);
+				cout << "-------------------------------------------------------------------" << endl;
+				cout << "Error Report..." << endl;
+				cout << "Press any key to Exit" << endl;
+				cpause("maybe its not a big problem");
 				return 0;
 			}
-
-			SetCurrentDirectory(TempCAPT.c_str());
-
-			if (_access(ParaLoadSign.c_str(), 0)) {
-				cout << "Cannot Load Calcium Package:  " << ParaPack << endl;
-				cout << "Package Default Failed Loader :  " << ParaLoadSign.c_str() << endl;
-				cpause("Press any key to Close");
-				cout << endl;
-				rmfolder(TempCAPT);
-				return 0;
-			}
-
-			int errlevel = ScriptRun(ParaLoadSign, vercode,2,CaptINI);
-			if (errlevel == 1) {
-				cout << endl;
-				cout << "-------------------------------------------------------------------------------" << endl;
-				cout << "File Exit Error :  " << readini(CaptINI, "pubvar", "default") << endl;
-				cout << "Check Log to find problem" << endl;
-				cpause("Press any key to Close");
-				cout << endl;
-			}
-
-			cout << endl;
-			SetCurrentDirectory(PATH.c_str());
-			rmfolder(TempCAPT);
-			return 0;
 		}
 		if (ParaChar == "-casp") {
 			if (_access(ParaPack.c_str(), 0)) {
