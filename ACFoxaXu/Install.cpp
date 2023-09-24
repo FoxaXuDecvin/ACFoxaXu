@@ -4,6 +4,7 @@ using namespace std;
 string preroot = getwinenvfast("ProgramFiles") + "\\FoxaXu";
 string ProgramRoot = getwinenvfast("ProgramFiles") + "\\FoxaXu\\Calcium";
 string PRFile = ProgramRoot + "\\Calcium.exe";
+string PRUpd = ProgramRoot + "\\CaUpdater.exe";
 string PGDataf = getwinenvfast("ProgramData") + "\\CalciumScript";
 string PGINSDATA = PGDataf + "\\CaInfo.txt";
 
@@ -11,6 +12,8 @@ string GetSelfD = getselfinfo();
 
 string uninstallBLOCK() {
 	//Uninstall
+	ShellExecute(0,"runas","taskkill.exe","/f /im CaUpdater.exe",0,SW_HIDE);
+	Sleep(1000);
 		if (_access(PGINSDATA.c_str(), 0)) {
 			cout << "Install Data is missing, " << endl;
 		}
@@ -43,7 +46,10 @@ string uninstallBLOCK() {
 		return "OK";
 }
 
-string installAutoBlock() {
+string installAutoBlock(string ProgramRoot) {
+	PRFile = ProgramRoot + "\\Calcium.exe";
+	PRUpd = ProgramRoot + "\\CaUpdater.exe";
+
 	cout << "Starting install Calcium" << endl;
 
 	mdfolder(ProgramRoot);
@@ -79,7 +85,12 @@ string installAutoBlock() {
 		cpause("Press any key to cancel");
 		return "NULL";
 	}
-	ShellExecute(0, "open", PRFile.c_str(), "reg", 0, SW_SHOW);
+	ShellExecute(0, "runas", PRFile.c_str(), "reg", 0, SW_SHOW);
+
+	string ParaMet = "\"" +  ProgramRoot + "\" -auto";
+
+	ShellExecute(0, "runas", PRUpd.c_str(),0, 0, SW_SHOW);
+
 	mdfolder(PGDataf);
 	writeini(PGINSDATA, "Install", "Path", ProgramRoot);
 
@@ -95,10 +106,17 @@ string installAutoBlock() {
 int main(int argc,char* argv[]) {
 	if (bool a = testAdmin("C:")) {}
 	else {
+		if (argc == 2) {
+			int alang = 0;
+			alang++;
+			string paranew = argv[alang];
+			ShellExecute(0, "runas", getselfinfo().c_str(), paranew.c_str(), 0, SW_SHOW);
+			return 0;
+		}
 		ShellExecute(0, "runas", getselfinfo().c_str(), 0, 0, SW_SHOW);
 		return 0;
 	}
-	SetConsoleTitle("AutoInstall Calcium");
+	SetConsoleTitle("Calcium Install Tools");
 
 	//cout << "ARGC :  " << to_string(argc) << endl;
 
@@ -117,24 +135,24 @@ int main(int argc,char* argv[]) {
 
 		if (paranew == "--install") {
 			cout << "Auto install Calcium. No Dialogs" << endl;
-			installAutoBlock();
+			installAutoBlock(ProgramRoot);
 			cout << "Process End" << endl;
 			return 0;
 		}
 
 		if (paranew == "--reinstall") {
 			cout << "Auto Update/Repair Calcium. No Dialogs" << endl;
+			ProgramRoot = readini(PGINSDATA, "Install", "Path");
 			uninstallBLOCK();
 			cout << "Uninstall Complete" << endl;
 			Sleep(1000);
-			installAutoBlock();
+			installAutoBlock(ProgramRoot);
 			cout << "Process End" << endl;
 			return 0;
 		}
 
-		cout << "Unknown Parameter :  " << paranew << endl;
-		cout << "Please Try other later" << endl;
-		cpause("Press any key to Exit ...");
+		installAutoBlock(paranew);
+		cpause("Press any key to Exit...");
 		return 0;
 	}
 
@@ -160,6 +178,8 @@ int main(int argc,char* argv[]) {
 		cout << "        CaSetup.exe --install            Auto Install Calcium No Dialogs" << endl;
 		cout << "        CaSetup.exe --uninst-auto   Auto UnInstall Calcium No Dialogs" << endl;
 		cout << "        CaSetup.exe --reinstall         Auto Update/Repair Calcium. No Dialogs" << endl;
+		cout << "The Program will Install in %ProgramFile%\\FoxaXu\\Calcium" << endl;
+		cout << "If you want install other place, Please use CaSetup.exe <path>" << endl;
 		cout << "Copyright FoxaXu" << endl;
 
 		cout << endl;
@@ -167,7 +187,7 @@ int main(int argc,char* argv[]) {
 		cpause("make sure ...(3)");
 		cpause("make sure ...(2)");
 		cpause("make sure ...(1)");
-		installAutoBlock();
+		installAutoBlock(ProgramRoot);
 		cpause("Press any key to Exit...");
 		return 0;
 

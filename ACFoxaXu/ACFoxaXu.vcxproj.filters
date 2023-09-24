@@ -21,6 +21,9 @@
     <ClInclude Include="ADSF.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ScriptRun.old.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ACFoxaXu.rc">
@@ -28,7 +31,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ACF.cpp">
+    <ClCompile Include="Calcium.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="TransLine.cpp">
@@ -41,6 +44,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Updater.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Shell.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="CAC.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

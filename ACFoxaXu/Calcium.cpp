@@ -1,11 +1,10 @@
 //Calcium Language
 #include "ADSF.h"
+#include"D:\CppHeader\winapicore.h"
 //定义ACF的版本信息
 
 string PATH = getselfpath();
 string COREFILE = getselfinfo();
-
-int vercode = 1003;
 
 string VCNum = to_string(vercode);
 string ConfigINI = PATH + "\\config.ini";
@@ -74,6 +73,8 @@ int main(int argc, char*argv[]) {
 		string cmd = "\"\"" + COREFILE + "\" -capt \"" + PATH + readini(PATH + "\\config.ini", "default", "nopara")+"\"\"";
 		cout << "Load :  " << cmd << endl;
 		system(cmd.c_str());
+		string pa = getselfpath() + "\\CaShell.exe";
+		ShellExecute(0, "open", pa.c_str(), 0, 0, SW_SHOW);
 		return 0;
 	}
 	// P <1> <2>
@@ -105,6 +106,22 @@ int main(int argc, char*argv[]) {
 				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\edit /f", SW_SHOW);
 				cmds = "reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\edit\\command /ve /t REG_SZ /f /d \"\\\"notepad\\\" \\\"%1\\\" \"";
 				WinExec(cmds.c_str(), SW_SHOW);
+
+				cmds = "reg add HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run /v \"Calcium Auto Update\" /t REG_SZ /d \"" + getselfpath() + "\\CaUpdater.exe\"";
+				//cout << "_" << cmds << "_" << endl;
+				WinExec(cmds.c_str(), SW_SHOW);
+
+				//添加PATH
+				SetCurrentDirectory(getselfpath().c_str());
+				string cacore = getwinenvfast("SystemRoot") + "\\cac.exe";
+				if (_access(".\\Cac.exe", 0)) {
+					Sleep(3000);
+					if (_access(".\\Cac.exe", 0)) {
+						MessageBox(0, "Error, Cac Fast Invoke is Missing on Install", "Auto Install calcium", MB_ICONERROR | MB_OK);
+					}
+				}
+				CopyFile(".\\Cac.exe", cacore.c_str(), 0);
+
 				system("assoc .ca=CalciumScript");
 				system("assoc .cascript=CalciumScript");
 				system("assoc .capt=CalciumPackage");
@@ -116,8 +133,15 @@ int main(int argc, char*argv[]) {
 		}
 		if (ParaFile == "unreg") {
 			if (bool r = testAdmin("C:")) {
+				cout << "Delete Register" << endl;
 				WinExec("reg delete HKEY_CLASSES_ROOT\\CalciumScript /f", SW_SHOW);
 				WinExec("reg delete HKEY_CLASSES_ROOT\\CalciumPackage /f", SW_SHOW);
+				WinExec("reg delete HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run /v \"Calcium Auto Update\" /f", SW_SHOW);
+				
+				//删除PATH
+				string cacore = getwinenvfast("SystemRoot") + "\\cac.exe";
+				remove(cacore.c_str());
+
 				cout << "Complete" << endl;
 				return 0;
 			}
