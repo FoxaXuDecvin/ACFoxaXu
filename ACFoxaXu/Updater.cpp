@@ -72,6 +72,10 @@ int main(int argc, char* argv[]) {
 			string NewVersion = geturlcode(WebURL);
 
 			if (CURVerPart == NewVersion) {
+				if (atoi(readini(".\\config.ini", "Version", "UpdateSleep").c_str()) == -1) {
+					//Only Check Once a Update On StartUp
+					return 0;
+				}
 				Sleep(atoi(readini(".\\config.ini", "Version", "UpdateSleep").c_str()));
 				goto ReCheckUpdate;
 			}

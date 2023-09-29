@@ -64,6 +64,7 @@ int packloader(string packfile,string carun,string TCAPT) {
 
 	cout << endl;
 	SetCurrentDirectory(PATH.c_str());
+	rmfolder(TempCAPT.c_str());
 
 	return 1;
 }
@@ -198,6 +199,7 @@ int main(int argc, char*argv[]) {
 				cout << "Error Report..." << endl;
 				cout << "Press any key to Exit" << endl;
 				cpause("maybe its not a big problem");
+				rmfolder(TempCAPT.c_str());
 				return 0;
 			}
 		}
@@ -257,6 +259,7 @@ int main(int argc, char*argv[]) {
 				cout << "Error Report..." << endl;
 				cout << "Press any key to Exit" << endl;
 				cpause("maybe its not a big problem");
+				rmfolder(TempCAPT.c_str());
 				return 0;
 			}
 		}

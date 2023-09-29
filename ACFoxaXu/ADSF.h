@@ -4,14 +4,27 @@
 #include"D:\CppHeader\GlobalVar.h"
 using namespace std;
 
+int InsidePreview = 1;
+
 string what = "HelloWord";
 
 string RunINFO = getselfinfo();
 string RunPath = getselfpath();
+string CONFIGROOT = RunPath + "\\config.ini";
+string settings = RunPath + "\\settings.ini";
 
-int vercode = 1006;
-string Version = "LightCore";
-string ComVer = "2023/9/24";
+string verinfor = readini(CONFIGROOT, "Version", "CURRENT");
+int vercode = atoi(verinfor.c_str());
+string Version = readini(CONFIGROOT,"Version","CodeName");
+string ComVer = readini(CONFIGROOT, "Version", "ComVer");
+
+string VarSpace = "varspace;";
+int VarSpaceMax;
+
+string LangOut(string title) {
+	string langfile = readini(settings, "setting", "text");
+	cout << readini(langfile, "CALCIUM", title) << endl;
+}
 
 class ClearType {
 	int Line;
@@ -61,19 +74,21 @@ int GetIntGlobal(string GlobalData) {
 }
 
 string CleanAuto(string info, string replaceword) {
+	if (checkChar(info, replaceword) == 0) {
+		return info;
+	}
 	return Replace(info, replaceword, "");
 }
 
 string cutlineblock(string lines, int line) {
+
+	//cout << "New Request :  Text " << lines << "    Line " << to_string(line) << endl;
 
 	if (line == NULL) {
 		return "NULL";
 	}
 	if (line < 0) {
 		return "MinSetFailed";
-	}
-	if (line > 10) {
-		return "MaxSetFailed";
 	}
 
 	char* Slinechar = nullptr;
@@ -90,118 +105,132 @@ string cutlineblock(string lines, int line) {
 	Slinecut = const_cast<char*>(old_Line);
 
 	string strback;
-	int stepstart = 1;
 
-	WriteIntGlobal("StepRoll", 1);
+	int curfind = 1;
 
-BackstepP:
-	int curfind = GetIntGlobal("StepRoll");
+	string a;
 
 	//Start
-	string a = strtok(Slinecut, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	//P2start
-	curfind++;
-	a = strtok(NULL, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	curfind++;
-	a = strtok(NULL, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	curfind++;
-	a = strtok(NULL, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	curfind++;
-	a = strtok(NULL, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	curfind++;
-	a = strtok(NULL, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	curfind++;
-	a = strtok(NULL, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	curfind++;
-	a = strtok(NULL, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	curfind++;
-	a = strtok(NULL, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	curfind++;
-	a = strtok(NULL, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
 
+	a = strtok(Slinecut, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	curfind++;
+
+	AddAgain:
+
+	a = strtok(NULL, Slinechar);
+	//cout << "Line :  " << line << "  CurFind :   " << curfind << endl;
+	if (line == curfind) {
+		//cout << "Return :  " << a << endl;
+		return a;
+	}
+	curfind++;
+	goto AddAgain;
 	//END
-
-	curfind++;
-	WriteIntGlobal("StepRoll", curfind);
-	goto BackstepP;
 
 	return "failed~s";
 }
 
-string TransVar(string Info, string PubVar) {
-	if (_access(PubVar.c_str(), 0)) {
-		return Info;
+string cutlineblockA(string lines,string cutmark, int line) {
+
+	//cout << "New Request :  Text " << lines << "    Line " << to_string(line) << endl;
+
+	if (line == NULL) {
+		return "NULL";
 	}
-	if (Info == "") {
-		return Info;
+	if (line < 0) {
+		return "MinSetFailed";
 	}
 
-	string herodata = Info;
-	int localget = 1;
+	char* Slinechar = nullptr;
+	char* Slinecut = nullptr;
 
-BackGet:
+	const char* STR_Line = nullptr;
+	const char* old_Line = nullptr;
+
+	string Rep_INFO = cutmark;
+	old_Line = lines.c_str();
+	STR_Line = Rep_INFO.c_str();
+
+	Slinechar = const_cast<char*>(STR_Line);
+	Slinecut = const_cast<char*>(old_Line);
+
+	string strback;
+
+	int curfind = 1;
+
+	string a;
+
+	//Start
+
+	a = strtok(Slinecut, Slinechar);
+	if (line == curfind) {
+		return a;
+	}
+	curfind++;
+
+AddAgain:
+
+	a = strtok(NULL, Slinechar);
+	//cout << "Line :  " << line << "  CurFind :   " << curfind << endl;
+	if (line == curfind) {
+		//cout << "Return :  " << a << endl;
+		return a;
+	}
+	curfind++;
+	goto AddAgain;
+	//END
+
+	return "failed~s";
+}
+
+string TransVar(string Info) {
+	string backinfo = Info;
 	
-	string geti = "MRA" + to_string(localget);
-
-	string GETSMax = readini(PubVar, "MRALIST", "$maxnum");
-	int gmax_int = atoi(GETSMax.c_str());
-
-	if (localget > gmax_int) {
-		return herodata;
+	if (VarSpaceMax == 0) {
+		return backinfo;
 	}
 
-	string gets = readini(PubVar, "MRALIST", geti);
-	if (gets == "readini-failed") {
-		cout << "gets Error :  " << geti << endl;
-	}
+	int readpoint = 1;
+	int startReadVar = 2;
+	string VarHead;
+	string readvar;
+	
+	string varhead;
+	string varset;
 
-	if (GETSMax == "readini-failed") {
-		cout << "getsmax Error :  " << GETSMax << endl;
-	}
-	int gsmax_int = atoi(GETSMax.c_str());
+BackTransLate:
+	//%var Mark Reader
+	VarHead = ";";
+	//cout << "readvar Head :  " << VarSpace << ".  " << VarHead << "_  " << to_string(startReadVar) << "_." << endl;
+	readvar = cutlineblockA(VarSpace, VarHead, startReadVar);
+	//cout << "readvar : " << readvar << endl;
+	readvar = CleanAuto(readvar, ";");
+	//cout << "readvar After Clean : " << readvar << endl;
 
-	string gvars = readini(PubVar, "VarST", gets);
-	if (gvars == "readini-failed") {
-		cout << "gvars Error :  " << gets << endl;
-	}
-	if (gvars == "NULL") {
-		localget++;
-		goto BackGet;
-	}
-	herodata = Replace(herodata, gets, gvars);
+	//Get XX = NN
 
-	localget++;
-	goto BackGet;
+	varhead = cutlineblockA(readvar, "=", 1);
+	//cout << "Varhead : _" << varhead << "_" << endl;
+	varset = cutlineblockA(readvar, "=", 2);
+	//cout << "VarSet : _" << varset << "_" << endl;
+
+	//cout << "VarSet : _" << backinfo << "_  _" << varhead << "_   _" << varset << "_" << endl;
+	backinfo = Replace(backinfo, varhead, varset);
+	//cout << "BackInfo :  _" << backinfo << "_" << endl;
+
+	//cout << "If Command :  _" << to_string(readpoint) << "_   VarSpaceMax :  _" << to_string(VarSpaceMax) << "_" << endl;
+	if (readpoint == VarSpaceMax) {
+		//cout << "BackData :  _" << backinfo << "_" << endl;
+		//cout << "-----------------------------------------------------------------" << endl;
+		return backinfo;
+	}
+	readpoint++;
+	startReadVar++;
+	goto BackTransLate;
+
 }
 
 int GetMaxNum(string Dict, string Head) {
@@ -223,6 +252,52 @@ string WriteNewMRA(string Dict, string Head, string INFO) {
 	string NewMRA = "MRA" + gmnstr;
 	writeini(Dict, Head, NewMRA, INFO);
 	return NewMRA;
+}
+
+void varspaceadd(string varhead, string varinfo) {
+	VarSpace = VarSpace + varhead + "=" + varinfo + ";";
+
+	VarSpaceMax++;
+
+	return;
+}
+void varspacedelete(string VarHead) {
+	int startReadVar = 1;
+	string readvar;
+
+	string varhead;
+	string varset;
+
+BackFoundLine:
+	//%var Mark Reader
+	VarHead = ";";
+	//cout << "readvar Head :  " << VarSpace << ".  " << VarHead << "_  " << to_string(startReadVar) << "_." << endl;
+	readvar = cutlineblockA(VarSpace, VarHead, startReadVar);
+	//cout << "readvar : " << readvar << endl;
+	readvar = CleanAuto(readvar, ";");
+	//cout << "readvar After Clean : " << readvar << endl;
+
+	//Get XX = NN
+
+	varhead = cutlineblockA(readvar, "=", 1);
+
+	//cout << "IF Command :  _" << to_string(startReadVar) << "_  . VMAX :  _" << to_string(VarSpaceMax) << "_" << endl;
+	if (varhead == varhead) {
+		//cout << "Varhead : _" << varhead << "_" << endl;
+		varset = cutlineblockA(readvar, "=", 2);
+
+		string delvars = varhead + "=" + varset + ";";
+		//cout << "Sort Delete Info :  _" << delvars << "_ .  ResData :  _" << VarSpace << "_" << endl;
+		VarSpace = CleanAuto(VarSpace, delvars);
+		//cout << "After CUT :  _" << VarSpace << "_" << endl;
+		VarSpaceMax--;
+		//cout << "After VarMAX :  _" << to_string(VarSpaceMax) << "_" << endl;
+		//cout << "Var Space is Update.  Max : " << to_string(VarSpaceMax) << " . Message:   " << VarSpace << endl;
+		return;
+	}
+
+	startReadVar++;
+	goto BackFoundLine;
 }
 
 //正常退出输出 0.异常输出 1
@@ -275,9 +350,9 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 		cout << endl;
 		return 0;
 	}
-	if (checkChar(CaCMDS, "$$Cout") == 1) {
+	if (checkChar(CaCMDS, "$Cout") == 1) {
 		//输出文档
-		string out = CleanAuto(CaCMDS, "$$Cout ");
+		string out = CleanAuto(CaCMDS, "$Cout ");
 		printf(out.c_str());
 		cout << endl;
 		return 0;
@@ -396,7 +471,7 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 			// Read OK
 			return 0;
 		}
-		string outtext = TransVar(readtxt, PubVar);
+		string outtext = TransVar(readtxt);
 
 		//output
 		cout << outtext << endl;
@@ -406,45 +481,6 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 	}
 
 	//Calcium api
-	if (checkChar(CaCMDS, "$ApplyVar") == 1) {
-
-		string p1 = CleanAuto(CaCMDS, "$ApplyVar(\"");
-		string p2 = CleanAuto(p1, "\");");
-		string out = Replace(p2, "\",\"", " ");
-
-		string SelectVar = cutlineblock(out, 1);
-		string WriteVar = cutlineblock(out, 2);
-
-		if (SelectVar == "#$Version~calcium$") {
-			WriteNewMRA(PubVar, "MRALIST", WriteVar);
-			writeini(PubVar, "VarST", WriteVar, Version);
-			return 0;
-		}
-		if (SelectVar == "#$VersionCode~calcium$") {
-			WriteNewMRA(PubVar, "MRALIST", WriteVar);
-			writeini(PubVar, "VarST", WriteVar, to_string(vercode));
-			return 0;
-		}
-		if (SelectVar == "#$CalciumRunPath$") {
-			WriteNewMRA(PubVar, "MRALIST", WriteVar);
-			writeini(PubVar, "VarST", WriteVar, getselfpath());
-			return 0;
-		}
-		if (SelectVar == "#$CalciumCore$") {
-			WriteNewMRA(PubVar, "MRALIST", WriteVar);
-			writeini(PubVar, "VarST", WriteVar, getselfinfo());
-			return 0;
-		}
-		if (SelectVar == "#$CalciumReleaseTime$") {
-			WriteNewMRA(PubVar, "MRALIST", WriteVar);
-			writeini(PubVar, "VarST", WriteVar, ComVer);
-			return 0;
-		}
-
-		WriteNewMRA(PubVar, "MRALIST", WriteVar);
-		writeini(PubVar, "VarST", WriteVar, "Null");
-		return 0;
-	}
 	if (checkChar(CaCMDS, "$WinEnv") == 1) {
 		string p1 = CleanAuto(ResCMD, "$WinEnv(\"");
 		string p2 = CleanAuto(p1, "\");");
@@ -487,6 +523,17 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 
 		WriteNewMRA(PubVar, "MRALIST", WriteVar);
 		writeini(PubVar, "VarST", WriteVar, WinEnvSet);
+
+		return 0;
+	}
+	if (checkChar(ResCMD, "$UpVar") == 1) {
+
+		varspaceadd("$CalciumVersion$", Version);
+		varspaceadd("$CalciumVerCode$", to_string(vercode));
+		varspaceadd("$CalciumPackage$", getwinenv("cd"));
+		varspaceadd("$CalciumComVer$", ComVer);
+		varspaceadd("$CalciumRunPath$", getselfpath());
+		varspaceadd("$CalciumCore$", getselfinfo());
 
 		return 0;
 	}
@@ -538,47 +585,90 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 	}
 
 	//变量
-	if (checkChar(CaCMDS, "$$var.edit") == 1) {
+	if (checkChar(ResCMD, "$new.var") == 1) {
 
-		string p1 = CleanAuto(ResCMD, "$$var.edit(\"");
-		string p2 = CleanAuto(p1, "\");");
-		string out = Replace(p2, "\",\"", " ");
+		string p1 = CleanAuto(ResCMD, "$new.var ");
+		string out = CleanAuto(p1, " ");
 
-		string varname = cutlineblock(out, 1);
-		string varinfo = cutlineblock(out, 2);
+		string varname = cutlineblockA(out,"=",1);
 
-		WriteNewMRA(PubVar, "MRALIST", varname);
-		writeini(PubVar, "VarST", varname, varinfo);
+		if (checkChar(varname, ";")==1){
+			cout << "Found Text has Forbidden Text :  \";\"" << endl;
+			return 2;
+		}
 
-		return 0;
-	}
-	if (checkChar(CaCMDS, "$$var.del") == 1) {
+		string varinfo = cutlineblockA(out,"=", 2);
 
-		string p1 = CleanAuto(ResCMD, "$$var.del(\"");
-		string out = CleanAuto(p1, "\");");
+		//cout << "Old VarSpace :  " << VarSpace << endl;
 
-		writeini(PubVar, "VarST", out, "NULL");
-		cout << "Delete Var :  " << out << endl;
+		varspaceadd(varname, varinfo);
+
+		//cout << "Var Space is Update.  Max : " << to_string(VarSpaceMax) << " . Message:   " << VarSpace << endl;
 
 		return 0;
 	}
 
-	if (checkChar(CaCMDS, "$$GetCin") == 1) {
+	if (checkChar(ResCMD, "$del.var") == 1) {
 
-		string p1 = CleanAuto(CaCMDS, "$$GetCin(\"");
-		string p2 = CleanAuto(p1, "\");");
-		string out = Replace(p2, "\",\"", " ");
+		string p1 = CleanAuto(ResCMD, "$del.var");
+		string out = CleanAuto(p1, " ");
 
-		string svar = cutlineblock(out, 1);
-		string outinfo = cutlineblock(out, 2);
+		//cout << "Select Delete Var :   _" << out << "_" << endl;
+
+		//Search Var
+
+		if (VarSpaceMax == 0) {
+			cout << "[Warning]No Var is Set" << endl;
+			return 0;
+		}
+
+		if (checkChar(VarSpace, out) == 1) {
+			varspacedelete(out);
+			return 0;
+		}
+		else {
+			cout << "Var is not exist :  _" << out << "_" << endl;
+		}
+	}
+
+	if (checkChar(CaCMDS, "$GetCin") == 1) {
+
+		string out = CleanAuto(CaCMDS, "$GetCin ");
+
+		string svar = cutlineblockA(out,"<", 1);
+		string outinfo = cutlineblockA(out, "<", 2);
 
 		string varinfo;
 		cout << outinfo;
 		getline(cin, varinfo);
+		cout << endl;
 
-		WriteNewMRA(PubVar, "MRALIST", svar);
-		writeini(PubVar, "VarST", svar, varinfo);
+		VarSpace = VarSpace + svar + "=" + varinfo + ";";
 
+		VarSpaceMax++;
+
+		return 0;
+	}
+
+	//debug
+
+	if (checkChar(ResCMD, "#$CharTests") == 1) {
+		string p1 = CleanAuto(ResCMD, "$CharTests(\"");
+		string p2 = CleanAuto(p1, "\");");
+		string out = Replace(p2, "\",\"", " ");
+
+		string rescmdA = cutlineblock(out, 1);
+		string rescmd = Replace(rescmdA, "\\sp%", " ");
+		int address = atoi(cutlineblock(out, 2).c_str());
+
+		cout << "Res CMD :  " << rescmd << "    address :  " << to_string(address) << endl;
+
+		cout << cutlineblock(rescmd, address) << endl;
+		return 0;
+	}
+	if (checkChar(ResCMD, "#$OutVarSpace") == 1) {
+		cout << "_" << VarSpace << "_" << endl;
+		cout << "VarSpaceMax :  _" << to_string(VarSpaceMax) << "_" << endl;
 		return 0;
 	}
 
@@ -607,7 +697,7 @@ int ScriptRun(string File, int vercode, int startline, string PubVar) {
 
 RollBackScript:
 	ReadPoint = LineReader(File, readline);
-	AfterTranslate = TransVar(ReadPoint, PubVar);
+	AfterTranslate = TransVar(ReadPoint);
 
 	if (checkChar(AfterTranslate, "#Include") == 1) {
 		string p1 = CleanAuto(AfterTranslate, "#Include(\"");

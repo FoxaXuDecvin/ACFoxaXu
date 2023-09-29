@@ -1,19 +1,24 @@
 #include "ADSF.h"
+#include"D:\CppHeader\WinReg.h"
 using namespace std;
 
 string preroot = getwinenvfast("ProgramFiles") + "\\FoxaXu";
 string ProgramRoot = getwinenvfast("ProgramFiles") + "\\FoxaXu\\Calcium";
 string PRFile = ProgramRoot + "\\Calcium.exe";
 string PRUpd = ProgramRoot + "\\CaUpdater.exe";
+string PRInfo = ProgramRoot + "\\DefaultICON.ico";
 string PGDataf = getwinenvfast("ProgramData") + "\\CalciumScript";
 string PGINSDATA = PGDataf + "\\CaInfo.txt";
 
 string GetSelfD = getselfinfo();
 
+string linkfile = getwinenvfast("public") + "\\Desktop\\Calcium Script.lnk";
+
 string uninstallBLOCK() {
 	//Uninstall
 	ShellExecute(0,"runas","taskkill.exe","/f /im CaUpdater.exe",0,SW_HIDE);
 	Sleep(1000);
+	remove(linkfile.c_str());
 		if (_access(PGINSDATA.c_str(), 0)) {
 			cout << "Install Data is missing, " << endl;
 		}
@@ -57,16 +62,24 @@ string installAutoBlock(string ProgramRoot) {
 
 	string worktemp = getwinenv("temp");
 
-	string TempF = worktemp + "\\CalciumSetup";
-	mdfolder(TempF);
+	string TempF;
+
+	if (_access(".\\LocalInstall", 0)) {
+		//Download Package
+		TempF = worktemp + "\\CalciumSetup";
+		mdfolder(TempF);
+
+		cout << "Download Package" << endl;
+		URLDown("https://gitcode.net/FoxaXu1/fxtoolcds/-/raw/master/Install.zip", TempF + "\\ins.zip");
+		URLDown("https://gitcode.net/FoxaXu1/download/-/raw/master/7z/7z.dll", TempF + "\\7z.dll");
+		URLDown("https://gitcode.net/FoxaXu1/download/-/raw/master/7z/7z.exe", TempF + "\\7z.exe");
+
+		Sleep(1000);
+	}
+	else {
+		TempF = getselfpath();
+	}
 	Sleep(2000);
-
-	cout << "Download Package" << endl;
-	URLDown("https://gitcode.net/FoxaXu1/fxtoolcds/-/raw/master/Install.zip", TempF + "\\ins.zip");
-	URLDown("https://gitcode.net/FoxaXu1/download/-/raw/master/7z/7z.dll", TempF + "\\7z.dll");
-	URLDown("https://gitcode.net/FoxaXu1/download/-/raw/master/7z/7z.exe", TempF + "\\7z.exe");
-
-	Sleep(1000);
 
 	cout << "Setting Program FIle" << endl;
 	mdfolder(preroot);
@@ -98,6 +111,7 @@ string installAutoBlock(string ProgramRoot) {
 
 	CopyFile(GetSelfD.c_str(), newuninst.c_str(), 0);
 
+	createlink(PRFile, linkfile, "", "Calcium Program");
 	cout << "Install Complete" << endl;
 	rmfolder(TempF);
 	return "OK";
@@ -180,13 +194,14 @@ int main(int argc,char* argv[]) {
 		cout << "        CaSetup.exe --reinstall         Auto Update/Repair Calcium. No Dialogs" << endl;
 		cout << "The Program will Install in %ProgramFile%\\FoxaXu\\Calcium" << endl;
 		cout << "If you want install other place, Please use CaSetup.exe <path>" << endl;
+		cout << "If you are developer, you can use Add .\\LocalInstall MarkFile on Root Path" << endl;
 		cout << "Copyright FoxaXu" << endl;
 
 		cout << endl;
 
-		cpause("make sure ...(3)");
-		cpause("make sure ...(2)");
-		cpause("make sure ...(1)");
+		cpause("If you want install, Please Press any key ...(3)");
+		cpause("If you want install, Please Press any key ...(2)");
+		cpause("If you want install, Please Press any key ...(1)");
 		installAutoBlock(ProgramRoot);
 		cpause("Press any key to Exit...");
 		return 0;

@@ -34,7 +34,7 @@
     <ClCompile Include="Calcium.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="TransLine.cpp">
+    <ClCompile Include="%28StopUse%29TransLine.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Install.cpp">

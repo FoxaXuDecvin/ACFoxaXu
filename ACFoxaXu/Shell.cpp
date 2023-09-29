@@ -12,6 +12,12 @@ int main() {
 
 	SetConsoleTitle("Calcium Shell");
 	system("cls");
+	if (InsidePreview == 1) {
+		cout << "Warning :  This version is Insider Preview, Do not Share this software" << endl;
+		cout << "You Need Keep Privacy Rule," << endl;
+		cout << "This Version is Not Release" << endl;
+		cout << "-------------------------------------------------------------------" << endl;
+	}
 	cout << "Welcome to use Calcium." << endl;
 	cout << "Version :  " << Version << "~" << vercode << endl;
 	cout << "This Version Release Time :  " << ComVer << endl;
@@ -34,7 +40,7 @@ backshell:
 		goto backshell;
 	}
 
-	string atranscmd = TransVar(ShellCMD, PubVar);
+	string atranscmd = TransVar(ShellCMD);
 	int cmrd = CaCmdRun(atranscmd, ShellCMD, ",\\unknown.txt", 1, vercode, PubVar);
 	if (cmrd == -2) {
 		// version Not Allow

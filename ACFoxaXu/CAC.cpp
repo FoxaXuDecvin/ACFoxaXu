@@ -66,7 +66,4 @@ int main(int argc, char* argv[]) {
 		MessageBox(0, "Error. Cannot Found Install Calcium information, Please check Calcium is complete to install on your PC", "Calcium Fast Invoke Error", MB_ICONERROR | MB_OK);
 		return 0;
 	}
-
-	
-
 }
