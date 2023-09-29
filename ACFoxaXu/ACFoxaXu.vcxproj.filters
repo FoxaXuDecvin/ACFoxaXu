@@ -52,15 +52,15 @@
     <ClCompile Include="CAC.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="CaOutage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\CA.ico">
+    <Image Include="..\..\WinterThemes.ico">
       <Filter>资源文件</Filter>
     </Image>
     <Image Include="..\..\Fox.ico">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\Night.ico">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

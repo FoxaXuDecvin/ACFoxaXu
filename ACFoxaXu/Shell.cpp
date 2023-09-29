@@ -2,14 +2,7 @@
 
 #include"ADSF.h"
 
-string PubVar = getwinenvfast("temp") + "\\ShellVar.ini";
-
 int main() {
-	if (_access(PubVar.c_str(),0)){}
-	else {
-		remove(PubVar.c_str());
-	}
-
 	SetConsoleTitle("Calcium Shell");
 	system("cls");
 	if (InsidePreview == 1) {
@@ -41,16 +34,14 @@ backshell:
 	}
 
 	string atranscmd = TransVar(ShellCMD);
-	int cmrd = CaCmdRun(atranscmd, ShellCMD, ",\\unknown.txt", 1, vercode, PubVar);
+	int cmrd = CaCmdRun(atranscmd, ShellCMD, ",\\unknown.txt", 1, vercode);
 	if (cmrd == -2) {
 		// version Not Allow
 		cpause("press any key to Exit");
-		remove(PubVar.c_str());
 		goto backshell;
 	}
 	if (cmrd == -1) {
 		//Return Exit
-		remove(PubVar.c_str());
 		return 0;
 	}
 	if (cmrd == 1) {

@@ -9,10 +9,11 @@ string COREFILE = getselfinfo();
 string VCNum = to_string(vercode);
 string ConfigINI = PATH + "\\config.ini";
 string TempCAPT = getwinenvfast("temp") + "\\CalciumPackage\\" + to_string(SpawnRandomNum(11111111, 99999999));
-string PubVar = RunPath + "\\vartemp~" + to_string(SpawnRandomNum(1111, 9999)) + ".ini";
 
 //成功返回 1，失败返回 0
 int packloader(string packfile,string carun,string TCAPT) {
+	string NRootLock = TCAPT + "\\session.lock";
+	string Nsafemark = TCAPT + "\\unsafe.lock";
 	//start
 	if (_access(packfile.c_str(), 0)) {
 		cout << "Package File is Not Exist" << endl;
@@ -39,7 +40,13 @@ int packloader(string packfile,string carun,string TCAPT) {
 			return 0;
 		}
 
-		int errlevel = ScriptRun(readini(CaptINI, "pubvar", "default").c_str(), vercode, 2, CaptINI);
+		ofstream RootLockS;
+		RootLockS.open(NRootLock);
+		RootLockS << "Lock" << endl;
+
+		ShellExecute(0, "open", CaOutage.c_str(), TCAPT.c_str(),getselfpath().c_str(), SW_SHOW);
+
+		int errlevel = ScriptRun(readini(CaptINI, "pubvar", "default").c_str(), vercode, 2, 1,Nsafemark);
 		if (errlevel == 1) {
 			cout << "Script Exception" << endl;
 			return 0;
@@ -56,7 +63,14 @@ int packloader(string packfile,string carun,string TCAPT) {
 		return 0;
 	}
 
-	int errlevel = ScriptRun(carun, vercode, 2, CaptINI);
+	
+
+	ofstream RootLockS;
+	RootLockS.open(NRootLock);
+	RootLockS << "Lock" << endl;
+
+	ShellExecute(0, "open", CaOutage.c_str(), TCAPT.c_str(), getselfpath().c_str(), SW_SHOW);
+	int errlevel = ScriptRun(carun, vercode, 2, 1,Nsafemark);
 	if (errlevel == 1) {
 		cout << "Script Exception" << endl;
 		return 0;
@@ -64,7 +78,6 @@ int packloader(string packfile,string carun,string TCAPT) {
 
 	cout << endl;
 	SetCurrentDirectory(PATH.c_str());
-	rmfolder(TempCAPT.c_str());
 
 	return 1;
 }
@@ -169,7 +182,7 @@ int main(int argc, char*argv[]) {
 		}
 
 		//加载脚本
-		int errlevel = ScriptRun(ParaFile,vercode,2,PubVar);
+		int errlevel = ScriptRun(ParaFile,vercode,2,0,"NULL");
 		if (errlevel == 1) {
 			cout << endl;
 			cout << "-------------------------------------------------------------------------------" << endl;
@@ -199,7 +212,6 @@ int main(int argc, char*argv[]) {
 				cout << "Error Report..." << endl;
 				cout << "Press any key to Exit" << endl;
 				cpause("maybe its not a big problem");
-				rmfolder(TempCAPT.c_str());
 				return 0;
 			}
 		}
@@ -224,7 +236,7 @@ int main(int argc, char*argv[]) {
 			}
 
 			//加载脚本
-			int errlevel = ScriptRun(ParaPack, vercode,2,PubVar);
+			int errlevel = ScriptRun(ParaPack, vercode, 2, 0, "NULL");
 			if (errlevel == 1) {
 				cout << endl;
 				cout << "-------------------------------------------------------------------------------" << endl;
@@ -259,7 +271,6 @@ int main(int argc, char*argv[]) {
 				cout << "Error Report..." << endl;
 				cout << "Press any key to Exit" << endl;
 				cpause("maybe its not a big problem");
-				rmfolder(TempCAPT.c_str());
 				return 0;
 			}
 		}
@@ -294,7 +305,7 @@ int main(int argc, char*argv[]) {
 				return 0;
 			}
 			if (GetLineData == ParaLoadSign) {
-				int errlevel = ScriptRun(ParaPack, vercode, CURRLINE, PubVar);
+				int errlevel = ScriptRun(ParaPack, vercode, CURRLINE, 0,"NULL");
 				if (errlevel == 1) {
 					cout << endl;
 					cout << "-------------------------------------------------------------------------------" << endl;

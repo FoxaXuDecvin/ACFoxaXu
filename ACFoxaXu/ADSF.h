@@ -4,12 +4,13 @@
 #include"D:\CppHeader\GlobalVar.h"
 using namespace std;
 
-int InsidePreview = 1;
+int InsidePreview = 0;
 
 string what = "HelloWord";
 
 string RunINFO = getselfinfo();
 string RunPath = getselfpath();
+string CaOutage = getselfpath() + "\\CaOutage.exe";
 string CONFIGROOT = RunPath + "\\config.ini";
 string settings = RunPath + "\\settings.ini";
 
@@ -80,110 +81,30 @@ string CleanAuto(string info, string replaceword) {
 	return Replace(info, replaceword, "");
 }
 
-string cutlineblock(string lines, int line) {
+string cutlineblockA(string lines, string cutmark, int line) {
+	char* readcut = NULL;
 
-	//cout << "New Request :  Text " << lines << "    Line " << to_string(line) << endl;
+	char Texts[65535] = "a";
+	char CUMark[65535] = "a";
 
-	if (line == NULL) {
-		return "NULL";
+	strcpy_s(Texts, lines.c_str());
+	strcpy_s(CUMark, cutmark.c_str());
+
+	// 分割字符串，返回分割后的子字符串
+	int cutrecord = 1;
+	string token = strtok_s(Texts, CUMark, &readcut);
+
+NextRollCR:
+	if (cutrecord == line) {
+		return token;
 	}
-	if (line < 0) {
-		return "MinSetFailed";
-	}
-
-	char* Slinechar = nullptr;
-	char* Slinecut = nullptr;
-
-	const char* STR_Line = nullptr;
-	const char* old_Line = nullptr;
-
-	string Rep_INFO = " ";
-	old_Line = lines.c_str();
-	STR_Line = Rep_INFO.c_str();
-
-	Slinechar = const_cast<char*>(STR_Line);
-	Slinecut = const_cast<char*>(old_Line);
-
-	string strback;
-
-	int curfind = 1;
-
-	string a;
-
-	//Start
-
-	a = strtok(Slinecut, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	curfind++;
-
-	AddAgain:
-
-	a = strtok(NULL, Slinechar);
-	//cout << "Line :  " << line << "  CurFind :   " << curfind << endl;
-	if (line == curfind) {
-		//cout << "Return :  " << a << endl;
-		return a;
-	}
-	curfind++;
-	goto AddAgain;
-	//END
-
-	return "failed~s";
+	cutrecord++;
+	token = strtok_s(NULL, CUMark, &readcut);
+	goto NextRollCR;
 }
 
-string cutlineblockA(string lines,string cutmark, int line) {
-
-	//cout << "New Request :  Text " << lines << "    Line " << to_string(line) << endl;
-
-	if (line == NULL) {
-		return "NULL";
-	}
-	if (line < 0) {
-		return "MinSetFailed";
-	}
-
-	char* Slinechar = nullptr;
-	char* Slinecut = nullptr;
-
-	const char* STR_Line = nullptr;
-	const char* old_Line = nullptr;
-
-	string Rep_INFO = cutmark;
-	old_Line = lines.c_str();
-	STR_Line = Rep_INFO.c_str();
-
-	Slinechar = const_cast<char*>(STR_Line);
-	Slinecut = const_cast<char*>(old_Line);
-
-	string strback;
-
-	int curfind = 1;
-
-	string a;
-
-	//Start
-
-	a = strtok(Slinecut, Slinechar);
-	if (line == curfind) {
-		return a;
-	}
-	curfind++;
-
-AddAgain:
-
-	a = strtok(NULL, Slinechar);
-	//cout << "Line :  " << line << "  CurFind :   " << curfind << endl;
-	if (line == curfind) {
-		//cout << "Return :  " << a << endl;
-		return a;
-	}
-	curfind++;
-	goto AddAgain;
-	//END
-
-	return "failed~s";
+string cutlineblock(string lines, int line) {
+	return cutlineblockA(lines, " ", line);
 }
 
 string TransVar(string Info) {
@@ -254,25 +175,35 @@ string WriteNewMRA(string Dict, string Head, string INFO) {
 	return NewMRA;
 }
 
-void varspaceadd(string varhead, string varinfo) {
-	VarSpace = VarSpace + varhead + "=" + varinfo + ";";
+void varspaceadd(string VarHead, string varinfo) {
 
-	VarSpaceMax++;
+	if (checkChar(VarHead, ";") == 1) {
+		cout << "There is illegal text in the var" << endl;
+		return;
+	}
+	if (checkChar(varinfo, ";") == 1) {
+		cout << "There is illegal text in the var" << endl;
+		return;
+	}
 
-	return;
-}
-void varspacedelete(string VarHead) {
-	int startReadVar = 1;
+	if (VarSpaceMax == 0) {
+		VarSpace = VarSpace + VarHead + "=" + varinfo + ";";
+
+		VarSpaceMax++;
+
+		return;
+	}
+
+	int startReadVar = 2;
 	string readvar;
 
 	string varhead;
 	string varset;
 
-BackFoundLine:
+BackFoundOldLine:
 	//%var Mark Reader
-	VarHead = ";";
 	//cout << "readvar Head :  " << VarSpace << ".  " << VarHead << "_  " << to_string(startReadVar) << "_." << endl;
-	readvar = cutlineblockA(VarSpace, VarHead, startReadVar);
+	readvar = cutlineblockA(VarSpace, ";", startReadVar);
 	//cout << "readvar : " << readvar << endl;
 	readvar = CleanAuto(readvar, ";");
 	//cout << "readvar After Clean : " << readvar << endl;
@@ -281,11 +212,59 @@ BackFoundLine:
 
 	varhead = cutlineblockA(readvar, "=", 1);
 
-	//cout << "IF Command :  _" << to_string(startReadVar) << "_  . VMAX :  _" << to_string(VarSpaceMax) << "_" << endl;
-	if (varhead == varhead) {
-		//cout << "Varhead : _" << varhead << "_" << endl;
+	if (varhead == VarHead) {
+		//cout << "Varhead : _" << varhead << "_. Select :  _" << VarHead << "_" << endl;
 		varset = cutlineblockA(readvar, "=", 2);
+		//cout << "Var Set :  _" << varset << "_" << endl;
+		string delvars = varhead + "=" + varset + ";";
+		string newvars = varhead + "=" + varinfo + ";";
+		//cout << "Sort Delete Info :  _" << delvars << "_ .  ResData :  _" << VarSpace << "_" << endl;
+		VarSpace = Replace(VarSpace, delvars,newvars);
+		//cout << "After CUT :  _" << VarSpace << "_" << endl;
+		//cout << "After VarMAX :  _" << to_string(VarSpaceMax) << "_" << endl;
+		//cout << "Var Space is Update.  Max : " << to_string(VarSpaceMax) << " . Message:   " << VarSpace << endl;
+		return;
+	}
 
+	startReadVar--;
+	//cout << "IF Command :  _" << to_string(startReadVar) << "_  . VMAX :  _" << to_string(VarSpaceMax) << "_" << endl;
+	if (startReadVar == VarSpaceMax) {
+		VarSpace = VarSpace + VarHead + "=" + varinfo + ";";
+
+		VarSpaceMax++;
+
+		return;
+	}
+
+	startReadVar++;
+	startReadVar++;
+	goto BackFoundOldLine;
+}
+
+void varspacedelete(string VarHead) {
+
+	int startReadVar = 2;
+	string readvar;
+
+	string varhead;
+	string varset;
+
+BackFoundLine:
+	//%var Mark Reader
+	//cout << "readvar Head :  " << VarSpace << ".  " << VarHead << "_  " << to_string(startReadVar) << "_." << endl;
+	readvar = cutlineblockA(VarSpace, ";", startReadVar);
+	//cout << "readvar : " << readvar << endl;
+	readvar = CleanAuto(readvar, ";");
+	//cout << "readvar After Clean : " << readvar << endl;
+
+	//Get XX = NN
+
+	varhead = cutlineblockA(readvar, "=", 1);
+	
+	if (varhead == VarHead) {
+		//cout << "Varhead : _" << varhead << "_. Select :  _" << VarHead << "_" << endl;
+		varset = cutlineblockA(readvar, "=", 2);
+		//cout << "Var Set :  _" << varset << "_" << endl;
 		string delvars = varhead + "=" + varset + ";";
 		//cout << "Sort Delete Info :  _" << delvars << "_ .  ResData :  _" << VarSpace << "_" << endl;
 		VarSpace = CleanAuto(VarSpace, delvars);
@@ -296,13 +275,21 @@ BackFoundLine:
 		return;
 	}
 
+	startReadVar--;
+	//cout << "IF Command :  _" << to_string(startReadVar) << "_  . VMAX :  _" << to_string(VarSpaceMax) << "_" << endl;
+	if (startReadVar == VarSpaceMax) {
+		cout << "Var Not Found" << endl;
+		return;
+	}
+
+	startReadVar++;
 	startReadVar++;
 	goto BackFoundLine;
 }
 
 //正常退出输出 0.异常输出 1
 
-int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode, string PubVar) {
+int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode) {
 	if (checkChar(CaCMDS, "///") == 1) {
 		return 0;
 	}
@@ -382,12 +369,10 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 		}
 		USReturn = GetIntGlobal("NSTemp~info");
 		if (USReturn == 6) {
-			WriteNewMRA(PubVar, "MRALIST", mbvar);
-			writeini(PubVar, "VarST", mbvar, "yes");
+			varspaceadd(mbvar, "yes");
 		}
 		else {
-			WriteNewMRA(PubVar, "MRALIST", mbvar);
-			writeini(PubVar, "VarST", mbvar, "no");
+			varspaceadd(mbvar, "no");
 		}
 
 	SkipRecordNUL:
@@ -491,8 +476,7 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 
 		string WinEnv = getwinenvfast(WinEnvS.c_str());
 
-		WriteNewMRA(PubVar, "MRALIST", WriteVar);
-		writeini(PubVar, "VarST", WriteVar, WinEnv);
+		varspaceadd(WriteVar, WinEnv);
 
 		return 0;
 	}
@@ -506,8 +490,7 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 
 		string WinEnv = getwinenv(WinEnvS.c_str());
 
-		WriteNewMRA(PubVar, "MRALIST", WriteVar);
-		writeini(PubVar, "VarST", WriteVar, WinEnv);
+		varspaceadd(WriteVar, WinEnv);
 
 		return 0;
 	}
@@ -521,8 +504,7 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 
 		string WinEnvSet = getwinenvapi(WinEnvS);
 
-		WriteNewMRA(PubVar, "MRALIST", WriteVar);
-		writeini(PubVar, "VarST", WriteVar, WinEnvSet);
+		varspaceadd(WriteVar, WinEnvSet);
 
 		return 0;
 	}
@@ -535,6 +517,11 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 		varspaceadd("$CalciumRunPath$", getselfpath());
 		varspaceadd("$CalciumCore$", getselfinfo());
 
+		return 0;
+	}
+	if (checkChar(ResCMD, "#Debug.TestCrash") == 1) {
+		string A = cutlineblockA(what,"N", 2);
+		cout << "Its seems not crash happend" << endl;
 		return 0;
 	}
 	//WindowsAPI
@@ -686,11 +673,8 @@ int CaCmdRun(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercod
 	return 1;
 }
 
-int ScriptRun(string File, int vercode, int startline, string PubVar) {
-	ofstream logs;
-	string logfile = "log~" + to_string(SpawnRandomNum(11111, 99999)) + "~record.log";
-	logs.open(logfile);
-
+//rootlockmode 1-open 0-off
+int ScriptRun(string File, int vercode, int startline, int rootlockmode,string unsafelock) {
 	int readline = startline;
 	string ReadPoint;
 	string AfterTranslate;
@@ -741,7 +725,7 @@ RollBackScript:
 		//cout << "_" << GetLineData << "_,_" << LoadPart << "_" << endl;
 		if (GetLineData == LoadPart) {
 			//cout << "XCURRLINE :  " << to_string(XCURRLINE) << endl;
-			ScriptRun(FileInclude, vercode, XCURRLINE, PubVar);
+			ScriptRun(FileInclude, vercode, XCURRLINE, 0,"NULL");
 
 			readline++;
 			goto RollBackScript;
@@ -753,25 +737,27 @@ RollBackScript:
 
 	}
 
-	int cmrd = CaCmdRun(AfterTranslate, ReadPoint, File, readline, vercode, PubVar);
+	if (rootlockmode == 1) {
+		writeini(unsafelock, "Run", "Command",ReadPoint);
+		writeini(unsafelock, "Run", "Script", File);
+		writeini(unsafelock, "Run", "Line",to_string(readline));
+		cmarkfile(unsafelock + "~DVS", VarSpace);
+		writeini(unsafelock, "Run", "FullVersion", Version + "~" + to_string(vercode));
+	}
+	int cmrd = CaCmdRun(AfterTranslate, ReadPoint, File, readline, vercode);
 	if (cmrd == -2) {
 		// version Not Allow
 		cpause("press any key to Exit");
-		remove(PubVar.c_str());
-		logs.close();
-		remove(logfile.c_str());
+		remove(unsafelock.c_str());
 		return 0;
 	}
 	if (cmrd == -1) {
 		//Return Exit
-		remove(PubVar.c_str());
-		logs.close();
-		remove(logfile.c_str());
+		remove(unsafelock.c_str());
 		return 0;
 	}
 	if (cmrd == 1) {
-		logs << "Unknown Command :  " << ReadPoint << "  Line :  " << to_string(readline) << endl;
-		goto RollBackScript;
+		cout << "Unknown Command :  " << ReadPoint << "  Line :  " << to_string(readline) << endl;
 	}
 	if (cmrd == 2) {
 		cout << endl;
@@ -779,7 +765,7 @@ RollBackScript:
 		cout << "On The :  " << to_string(readline) << " .  COMMAND :  " << ReadPoint << endl;
 		cout << "This Problem is happend by Script" << endl;
 		cout << endl;
-		remove(PubVar.c_str());
+		remove(unsafelock.c_str());
 		return 1;
 	}
 	if (cmrd > 2) {
@@ -787,6 +773,8 @@ RollBackScript:
 		goto RollBackScript;
 	}
 
+
+	remove(unsafelock.c_str());
 	readline++;
 	goto RollBackScript;
 }
