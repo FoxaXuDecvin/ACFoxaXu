@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 				string ErrCMDLine = readini(safemark, "Run", "Line");
 				string FullVersion = readini(safemark, "Run", "FullVersion");
 				string ErrScript = readini(safemark, "Run", "Script");
-				string crashvarmem = LineReader(safemark + "~DVS", 1);
+				string crashvarmem = readini(safemark, "Run", "VarSpace");
 
 				//OutLogs
 				string CrashLogPath;

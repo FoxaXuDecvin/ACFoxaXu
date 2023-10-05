@@ -576,7 +576,6 @@ void CaRootLoaderX() {
 	return;
 }
 
-ofstream varPort;
 
 //rootlockmode 1-open 0-off
 int ScriptRun(string File, int vercode, int startline, int rootlockmode,string unsafelock) {
@@ -585,7 +584,6 @@ int ScriptRun(string File, int vercode, int startline, int rootlockmode,string u
 	string AfterTranslate;
 	string VarSpace, ErrCode;
 	string Tercmd;
-	varPort.open("~DVS");
 
 RollBackScript:
 	ReadPoint = LineReader(File, readline);
@@ -635,8 +633,8 @@ RollBackScript:
 		writeini(unsafelock, "Run", "Command",ReadPoint);
 		writeini(unsafelock, "Run", "Script", File);
 		writeini(unsafelock, "Run", "Line",to_string(readline));
-		varPort << VarSpace << endl;
 		writeini(unsafelock, "Run", "FullVersion", Version + "~" + to_string(vercode));
+		writeini(unsafelock, "Run", "VarSpace", VarSpace);
 	}
 	AfterTranslate = TransVar(ReadPoint);
 
