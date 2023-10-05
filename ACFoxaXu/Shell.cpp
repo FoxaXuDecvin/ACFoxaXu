@@ -3,20 +3,20 @@
 #include"ADSF.h"
 
 int main() {
+	RELOAD:
 	SetConsoleTitle("Calcium Shell");
 	system("cls");
 	if (InsidePreview == 1) {
-		cout << "Warning :  This version is Insider Preview, Do not Share this software" << endl;
-		cout << "You Need Keep Privacy Rule," << endl;
-		cout << "This Version is Not Release" << endl;
+		cout << "-------------------------------------------------------------------" << endl;
+		lntype("lang.public.unrelease");
 		cout << "-------------------------------------------------------------------" << endl;
 	}
-	cout << "Welcome to use Calcium." << endl;
-	cout << "Version :  " << Version << "~" << vercode << endl;
-	cout << "This Version Release Time :  " << ComVer << endl;
+	lntype("lang.shell.welcome");
+	cout << Outlang("lang.shell.ver") << " :  " << Version << "~" << vercode << endl;
+	cout << Outlang("lang.shell.reltime") << " :  " << ComVer << endl;
 	cout << "Copyright FoxaXu 2023" << endl;
-	cout << "Use Command to Debug or run command" << endl;
-	cout << "Use #end to Close Shell" << endl;
+	lntype("lang.shell.usehelp");
+	lntype("lang.shell.endcmd");
 	string ShellCMD;
 
 backshell:
@@ -24,8 +24,8 @@ backshell:
 	cout << "Calcium Shell Console   $ ";
 	getline(cin, ShellCMD);
 
-	if (checkChar(ShellCMD, "#load") == 1) {
-		cout << "Shell Mode not support #load :  " << ShellCMD << endl;
+	if (checkChar(ShellCMD, "$goto") == 1) {
+		cout << "Shell Mode not support $goto :  " << ShellCMD << endl;
 		goto backshell;
 	}
 	if (checkChar(ShellCMD, "#Include") == 1) {
@@ -33,8 +33,66 @@ backshell:
 		goto backshell;
 	}
 
+	//API
+	if (checkChar(ShellCMD, "$capt ") == 1) {
+		string Out = CleanAuto(ShellCMD, "$capt ");
+		string para = "-capt " + Out;
+		ShellExecute(0, "open", CaMain.c_str(), para.c_str(), 0, SW_SHOW);
+		goto backshell;
+	}
+	if (checkChar(ShellCMD, "$loadroot") == 1) {
+		cout << "Loading " << endl;
+		CaRootLoaderX();
+		cout << "Load OK" << endl;
+		goto backshell;
+	}
+	if (checkChar(ShellCMD, "$casp ") == 1) {
+		string Out = CleanAuto(ShellCMD, "$casp ");
+		string para = "-casp " + Out;
+		ShellExecute(0, "open", CaMain.c_str(), para.c_str(), 0, SW_SHOW);
+		goto backshell;
+	}
+	if (checkChar(ShellCMD, "$uninstall") == 1) {
+		string PGDataf = getwinenvfast("ProgramData") + "\\CalciumScript";
+		string PGINSDATA = PGDataf + "\\CaInfo.txt";
+		if (_access(PGINSDATA.c_str(), 0)) {
+			cout << "Error :  " << PGINSDATA << endl;
+			goto backshell;
+		}
+
+		string current = readini(PGINSDATA, "Install", "Path");
+		current = CleanAuto(current, "\\Calcium");
+		string mainprocess = current + "\\Manager~Calcium.exe";
+		if (_access(mainprocess.c_str(), 0)) {
+			cout << "Error :  " << mainprocess << endl;
+			goto backshell;
+		}
+		ShellExecute(0, "runas", mainprocess.c_str(), 0, 0, SW_SHOW);
+		return 0;
+	}
+	if (checkChar(ShellCMD, "$update") == 1){
+		string paraNew = "\"" + getselfpath() + "\"";
+		ShellExecute(0, "runas", CaUpdMain.c_str(),paraNew.c_str(), 0, SW_SHOW);
+		goto backshell;
+	}
+	if (checkChar(ShellCMD, "$reload") == 1) {
+		goto RELOAD;
+	}
+	if (checkChar(ShellCMD, "$edit.varspace") == 1) {
+		cout << "Type New VarSpace" << endl;
+		getline(cin, VarSpace);
+		
+		cout << endl;
+		string vsmd;
+		cout << "VarSpaceMax >  ";
+		getline(cin, vsmd);
+		VarSpaceMax = atoi(vsmd.c_str());
+
+		goto backshell;
+	}
+
 	string atranscmd = TransVar(ShellCMD);
-	int cmrd = CaCmdRun(atranscmd, ShellCMD, ",\\unknown.txt", 1, vercode);
+	int cmrd = RollCMD(atranscmd, ShellCMD, ",\\unknown.txt", 1,vercode);
 	if (cmrd == -2) {
 		// version Not Allow
 		cpause("press any key to Exit");

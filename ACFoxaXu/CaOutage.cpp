@@ -14,7 +14,7 @@ char* stringTocharX(string ConVert) {
 
 int main(int argc, char* argv[]) {
 	if (argc == 1) {
-		MessageBox(0, "Please Set Parameter to Run This Program", "Calcium Anti Outage", MB_ICONWARNING | MB_OK);
+		MessageBox(0, Outlang("lang.caoutage.noparameter").c_str(),"Calcium Anti Outage", MB_ICONWARNING | MB_OK);
 		return 0;
 	}
 	if (argc == 2) {
@@ -45,19 +45,34 @@ int main(int argc, char* argv[]) {
 				}
 				//Warning CrashRight
 				string ErrCMD = readini(safemark, "Run", "Command");
+				if (checkChar(ErrCMD, "pause") == 1) {
+					//ÔÚÔÝÍ£Ê±ÖÐ¶Ï
+					//not Crash
+					Sleep(2000);
+					rmfolder(CaptService);
+					return 0;
+				}
 				string ErrCMDLine = readini(safemark, "Run", "Line");
 				string FullVersion = readini(safemark, "Run", "FullVersion");
 				string ErrScript = readini(safemark, "Run", "Script");
 				string crashvarmem = LineReader(safemark + "~DVS", 1);
 
 				//OutLogs
+				string CrashLogPath;
+				string setpathdf = readini(settings, "Settings", "CrashSavePath");
+				if (setpathdf == "[Default]") {
+					CrashLogPath = getwinenvfast("UserProfile") + "\\Desktop\\Calcium~CrashReport.txt";
+				}
+				else {
+					CrashLogPath = setpathdf + "\\Calcium~CrashReport.txt";
+				}
 				ofstream CrashLog;
-				CrashLog.open("err~crash~report.log");
-				CrashLog << "-Calcium Crash/Exception Report-" << endl;
+				CrashLog.open(CrashLogPath);
+				CrashLog << Outlang("lang.caoutage.CrashTitle") << endl;
 				CrashLog << endl;
-				CrashLog << "            Calcium Seems Exit Exception.We apologize for the inconvenience caused by this crash" << endl;
-				CrashLog << "              if this problem from Package, Please contact capt auther, to send this Error Screen" << endl;
-				CrashLog << "    If this problem occurs in the Calcium Kernel, Please Contact us, Go To https://www.foxaxu.com/contact" << endl;
+				CrashLog << Outlang("lang.caoutage.CrashTitleA") << endl;
+				CrashLog << Outlang("lang.caoutage.CrashTitleB") << endl;
+				CrashLog << Outlang("lang.caoutage.CrashTitleC") << " https://www.foxaxu.com/contact" << endl;
 				CrashLog << endl;
 				CrashLog << endl;
 				CrashLog << "                    Crash Command :   _" + ErrCMD +"_" << endl;
@@ -66,14 +81,14 @@ int main(int argc, char* argv[]) {
 				CrashLog << endl;
 				CrashLog << "Script :  _" + ErrScript + "_" << endl;
 				CrashLog << "RunTemp :  _" + CaptService + "_" << endl;
-				CrashLog << "Crash Report is Save on :  _" + getselfpath() + "\\err~crash~report.log" + "_" << endl;
+				CrashLog << "Crash Report is Save on :  _" + CrashLogPath + "_" << endl;
 				CrashLog << "------------------------------------------------------------------------------------------------------------------------" << endl;
 				CrashLog << "memory Var Space :  " << endl;
 				CrashLog << crashvarmem << endl;
 				CrashLog << "------------------------------------------------------------------------------------------------------------------------" << endl;
 				CrashLog.close();
 				
-				ShellExecute(0, "open", "notepad", "err~crash~report.log", 0, SW_SHOW);
+				ShellExecute(0, "open", "notepad",CrashLogPath.c_str(), 0, SW_SHOW);
 				rmfolder(CaptService);
 				return 0;
 			}
@@ -84,12 +99,12 @@ int main(int argc, char* argv[]) {
 
 		}
 		else {
-			string ag = "Run Anti Outage Services Failed, Folder :  <" + CaptService + "> is Null.";
+			string ag = Outlang("lang.caoutage.runservicefailed") + " :  <" + CaptService + "> is Null.";
 			MessageBox(0,ag.c_str(), "Calcium Anti Outage", MB_ICONERROR | MB_OK);
 			return 0;
 		}
 
 	}
-	MessageBox(0, "Unknown Parameter", "Calcium Anti Outage", MB_ICONERROR | MB_OK);
+	MessageBox(0, Outlang("lang.caoutage.noparameter").c_str(), "Calcium Anti Outage", MB_ICONERROR | MB_OK);
 	return 0;
 }

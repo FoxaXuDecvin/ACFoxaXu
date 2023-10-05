@@ -5,7 +5,7 @@
 #include"D:\ACFoxaXuProject\ACFoxaXu\ACFoxaXu\DLLApi.h"
 using namespace std;
 
-int InsidePreview = 0;
+int InsidePreview = 1;
 
 string what = "HelloWord";
 
@@ -136,15 +136,12 @@ BackTransLate:
 	//cout << "Varhead : _" << varhead << "_" << endl;
 	varset = cutlineblockA(readvar, "=", 2);
 	//cout << "VarSet : _" << varset << "_" << endl;
+
 	//cout << "Current VarSpace :  _" << VarSpace << "_" << endl;
-	backinfo = Replace(backinfo, "%sbar%", " ");
-	backinfo = Replace(backinfo, "%selbar%", ";");
-	backinfo = Replace(backinfo, "%eqbar%", "=");
-	backinfo = Replace(backinfo, "%mnbar%", "$");
 	//cout << "VarSet : _" << backinfo << "_  _" << varhead << "_   _" << varset << "_" << endl;
 	backinfo = Replace(backinfo, varhead, varset);
-
 	//cout << "BackInfo :  _" << backinfo << "_" << endl;
+
 	//cout << "If Command :  _" << to_string(readpoint) << "_   VarSpaceMax :  _" << to_string(VarSpaceMax) << "_" << endl;
 	if (readpoint == VarSpaceMax) {
 		//cout << "BackData :  _" << backinfo << "_" << endl;
@@ -165,8 +162,6 @@ void varspaceadd(string VarHead, string varinfo) {
 	VarHead = CleanAuto(VarHead, " ");
 	varinfo = Replace(varinfo, " ", "%sbar%");
 	varinfo = Replace(varinfo, ";", "%selbar%");
-	varinfo = Replace(varinfo, "%eqbar%", "=");
-	varinfo = Replace(varinfo, "%mnbar%", "$");
 
 	if (checkChar(VarHead, ";") == 1) {
 		cout << "There is illegal text in the var" << endl;
@@ -285,21 +280,15 @@ BackFoundLine:
 //2 Plugin Load Error
 //3 OK
 int dllregister(string DLLNAME) {
-	DLLNAME = Replace(DLLNAME, "\"", "");
-	//cout << "StartLoadDLL" << endl;
 	if (_access(DLLNAME.c_str(), 0)) {
 		return 0;
 	}
-	//cout << "LoadAPI" << endl;
 	int back = DllCheckPlugin(DLLNAME);
-	//cout << "Verify。。。" << endl;
 	if (back == 1) {
 		return 1;
 	}
 
-	//cout << "Get Reg。。。" << endl;
 	string newvardll = DLLRegAPI(DLLNAME,1);
-	//cout << "Reg is :  _" << newvardll << "_" << endl;
 	if (newvardll == "LOADFAIL") {
 		return 2;
 	}
@@ -307,78 +296,137 @@ int dllregister(string DLLNAME) {
 		return 2;
 	}
 	//DLL Translate API
-	//cout << "Replace API。。。" << endl;
 	newvardll = Replace(newvardll, "lpDllPath", DLLNAME);
 
-	//END
-	//cout << "Add VarSpace。。。" << endl;
 	VarSpace = VarSpace + newvardll;
 
-	//cout << "Add VarSpaceMax。。。" << endl;
 	int maxvarget = atoi(DLLRegAPI(DLLNAME, 2).c_str());
-
-	//cout << "Make Add" << endl;
 
 	VarSpaceMax=VarSpaceMax + maxvarget;
 
-	//cout << "Complete。。。" << endl;
 	return 3;
 }
 
-// -2 Version Not Allow
-// -1 Normal Exit
-// 0 No Dialog Next
-// 1 Unknown Command
-// 2 CrashScript
-// >2 Skip Goto
 int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode) {
-	
-	string ReadCMD = cutlineblockA(CaCMDS, " ", 1);
-	string ReadSource = cutlineblockA(ResCMD, " ", 1);
-	if (ReadCMD == "") {
+	//cout << "RSCommand :  _" << CaCMDS << "_" << endl;
+	//cout << "RCommand :  _" << ResCMD << "_" << endl;
+
+	//防止冲突
+	CaCMDS = Replace(CaCMDS, "$$", "$");
+	ResCMD = Replace(ResCMD, "$$", "$");
+
+	if (ResCMD == "") {
+		return 0;
+	}
+	if (ResCMD == "$") {
+		return 1;
+	}
+	if (ResCMD == "$ ") {
+		return 1;
+	}
+	if (CaCMDS == "") {
+		//cout << "No Command" << endl;
 		return 0;
 	}
 
+	CaCMDS = "anticrashHEAD$" + CaCMDS;//AntiCrash
+	ResCMD = "anticrashHEAD$" + ResCMD;//AntiCrash
+
+	int sk = 0;
+	if (readini(settings, "Settings", "ShellAutoMark") == "open") {
+		sk = 1;
+	}
+	else {
+		sk = 0;
+	}
+
+	//再次Filter
+
+	//cout << "A:  RSCommand :  _" << CaCMDS << "_" << endl;
+	//cout << "A:  RCommand :  _" << ResCMD << "_" << endl;
+
+	string UseCMD;
+
+	if (sk == 1) {
+		UseCMD = cutlineblockA(CaCMDS, "$", 2);
+	}
+	else {
+		CaCMDS = CleanAuto(CaCMDS, "anticrashHEAD$");
+		if (checkChar(CaCMDS, "$") == 0)return 0;
+		UseCMD = CaCMDS;
+	}
+
+	//cout << "B:  RSCommand :  _" << CaCMDS << "_" << endl;
+	//cout << "B:  RCommand :  _" << ResCMD << "_" << endl;
+
+	UseCMD = CleanAuto(UseCMD, "$");
+
+	//cout << ResCMD << endl;
+
+	string UseRCMD = cutlineblockA(ResCMD, "$", 2);
+
+	//cout << UseRCMD << endl;
+
+	UseRCMD = CleanAuto(UseRCMD, "$");
+	//cout << "Command :   _" << UseCMD << "_" << endl;
+
+	//cout << "C:  RSCommand :  _" << CaCMDS << "_" << endl;
+	//cout << "C:  RCommand :  _" << ResCMD << "_" << endl;
+	//cout << "C:  USECommand :  _" << UseCMD << "_" << endl;
+	//cout << "C:  RUSECommand :  _" << UseRCMD << "_" << endl;
+
+	string ReadCMD = cutlineblockA(UseRCMD, " ", 1);
+	string VReadCMD = cutlineblockA(UseCMD, " ", 1);
+
+	cout << "D: RSCommand :  _" << ReadCMD << "_" << endl;
+	cout << "D: RUSECommand :  _" << VReadCMD << "_" << endl;
+
+	int brc = 0;
+
+	//cout << "Command :  _" << ReadCMD << "_" << endl;
 	BackRollResCMD:
 	//cout << "Read CMD :   _" << ReadCMD << "_" << endl;
-	if (ReadSource == "new.var") {
-		ResCMD = CleanAuto(ResCMD, "new.var ");
-		ResCMD = CleanAuto(ResCMD, "new.var");
-		if (ResCMD == "") {
-			cout << ReadCMD <<" Command:  " << endl;
+	if (ReadCMD == "new.var") {
+		UseRCMD = CleanAuto(UseRCMD, "new.var ");
+		UseRCMD = CleanAuto(UseRCMD, "new.var");
+		UseRCMD = CleanAuto(UseRCMD, "anticrashHEAD");
+		if (UseRCMD == "") {
+			cout << "new.var Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     new.var <var> = <data>" << endl;
 			return 0;
 		}
-		string VARS = cutlineblockA(ResCMD, "=", 1);
-		string VARINFO = cutlineblockA(ResCMD, "=", 2);
+		string VARS = cutlineblockA(UseRCMD, "=", 1);
+		string VARINFO = cutlineblockA(UseRCMD, "=", 2);
 		varspaceadd(VARS, VARINFO);
 		return 0;
 	}
-	if (ReadSource == "del.var") {
-		ResCMD = CleanAuto(ResCMD, "del.var ");
-		ResCMD = CleanAuto(ResCMD, "del.var");
-		if (ResCMD == "") {
-			cout << ReadCMD << " Command:  " << endl;
+	if (ReadCMD == "del.var") {
+		UseRCMD = CleanAuto(UseRCMD, "del.var ");
+		UseRCMD = CleanAuto(UseRCMD, "del.var");
+		UseRCMD = CleanAuto(UseRCMD, "anticrashHEAD");
+		if (UseRCMD == "") {
+			cout << "del.var Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     del.var <var>" << endl;
 			return 0;
 		}
-		varspacedelete(ResCMD);
+		varspacedelete(UseRCMD);
 		return 0;
 	}
 
 	//DLLRegister
 	if (ReadCMD == "LoadDLL") {
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
-		if (CaCMDS == "") {
-			cout << ReadCMD << " Command:  " << endl;
+		UseCMD = CleanAuto(UseCMD, "LoadDLL ");
+		UseCMD = CleanAuto(UseCMD, "LoadDLL");
+		UseCMD = CleanAuto(UseCMD, "anticrashHEAD");
+		if (UseCMD == "") {
+			cout << VReadCMD << " Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     LoadDLL <DLLFile>" << endl;
 			return 0;
 		}
-		int dlrback = dllregister(CaCMDS);
+		int dlrback = dllregister(UseCMD);
 		if (dlrback == 0) {
 			lntype("lang.kernel.nothisdll");
 			return 2;
@@ -398,22 +446,23 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		return 0;
 	}
 	if (ReadCMD == "DLLCMD") {
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
-		if (CaCMDS == "") {
-			cout << ReadCMD << " Command:  " << endl;
+		UseRCMD = CleanAuto(UseRCMD, "DLLCMD ");
+		UseRCMD = CleanAuto(UseRCMD, "DLLCMD");
+		UseRCMD = CleanAuto(UseRCMD, "anticrashHEAD");
+		if (UseRCMD == "") {
+			cout << VReadCMD << " Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << "DLLCMD :     $DLLCMD |<DLLFILE>|<FULL COMMAND>" << endl;
 			cout << "Use on DLL Register" << endl;
 			return 0;
 		}
-		if (checkChar(CaCMDS, "|") == 0) {
+		if (checkChar(UseRCMD, "|") == 0) {
 			cout << "You Need to Register \"|\" to DLLCMD" << endl;
 			return 2;
 		}
-		string DLLNAME = cutlineblockA(CaCMDS, "|", 1);
+		string DLLNAME = cutlineblockA(UseRCMD, "|", 1);
 		//cout << "DLL :  _" << DLLNAME << "_" << endl;
-		string DCMD = cutlineblockA(CaCMDS, "|", 2);
+		string DCMD = cutlineblockA(UseRCMD, "|", 2);
 		//cout << "DLL :  _" << DLLNAME << "_.  COMMAND :   _" << DCMD << "_" << endl;
 
 		if (_access(DLLNAME.c_str(), 0)) {
@@ -435,10 +484,11 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 
 	//VaR
 	if (ReadCMD == "goto") {
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
-		if (CaCMDS == "") {
-			cout << ReadCMD << " Command:  " << endl;
+		UseCMD = CleanAuto(UseCMD, "$goto ");
+		UseCMD = CleanAuto(UseCMD, "$goto");
+		UseCMD = CleanAuto(UseCMD, "anticrashHEAD");
+		if (UseCMD == "") {
+			cout << VReadCMD << " Command:  " << endl;
 			cout << "Text: :AAA:    Command: goto :AAA:" << endl;
 			return 0;
 		}
@@ -457,10 +507,10 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		//cout << "Line " << cl_strx << "  INFO :  _" << GetLineData << "_" << endl;
 
 		if (GetLineData == "overline") {
-			cout << "Goto Error:  Head :  _" << CaCMDS << "_" << endl;
+			cout << "Goto Error:  Head :  _" << UseCMD << "_" << endl;
 			return 2;
 		}
-		if (GetLineData == CaCMDS) {
+		if (GetLineData == UseCMD) {
 			//cout << "XCURRLINE :  " << to_string(XCURRLINE) << endl;
 			return XCURRLINE;
 		}
@@ -468,19 +518,20 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		goto ASBackRoll;
 	}
 	if (ReadCMD == "msgbox.var") {
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
-		CaCMDS = CleanAuto(CaCMDS, "msgbox.var ");
-		CaCMDS = CleanAuto(CaCMDS, "msgbox.var");
-		CaCMDS = CleanAuto(CaCMDS, "anticrashHEAD");
-		if (CaCMDS == "") {
-			cout << ReadCMD << " Command:  " << endl;
+		UseRCMD = CleanAuto(UseRCMD, "msgbox.var ");
+		UseRCMD = CleanAuto(UseRCMD, "msgbox.var");
+		UseRCMD = CleanAuto(UseRCMD, "anticrashHEAD");
+		UseCMD = CleanAuto(UseCMD, "msgbox.var ");
+		UseCMD = CleanAuto(UseCMD, "msgbox.var");
+		UseCMD = CleanAuto(UseCMD, "anticrashHEAD");
+		if (UseCMD == "") {
+			cout << VReadCMD << " Command:  " << endl;
 			cout << " COMMAND :     msgbox.var <var> = <Title>|<Info>" << endl;
 			return 0;
 		}
-		string VARS = cutlineblockA(CaCMDS, "=", 1);
+		string VARS = cutlineblockA(UseRCMD, "=", 1);
 
-		string MsgTag = cutlineblockA(CaCMDS, "=", 2);
+		string MsgTag = cutlineblockA(UseCMD, "=", 2);
 
 		string mgtitle = cutlineblockA(MsgTag, "|", 1);
 		string mginfo = cutlineblockA(MsgTag, "|", 2);
@@ -496,69 +547,80 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		}
 	}
 	if (ReadCMD == "pause") {
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
-		if (CaCMDS == "") {
+		UseCMD = CleanAuto(UseCMD, "pause ");
+		UseCMD = CleanAuto(UseCMD, "pause");
+		UseCMD = CleanAuto(UseCMD, "anticrashHEAD");
+		if (UseCMD == "") {
 			cpause(Outlang("lang.public.PAK"));
 			return 0;
 		}
-		cpause(CaCMDS);
+		cpause(UseCMD);
 		return 0;
 	}
 	if (ReadCMD == "end") {
 		return -1;
 	}
 	if (ReadCMD == "system") {
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
-		if (CaCMDS == "") {
-			cout << ReadCMD << " Command:  " << endl;
+		UseCMD = CleanAuto(UseCMD, "system ");
+		UseCMD = CleanAuto(UseCMD, "system");
+		UseCMD = CleanAuto(UseCMD, "anticrashHEAD");
+		if (UseCMD == "") {
+			cout << VReadCMD << " Command:  " << endl;
 			cout << " COMMAND :     system <OS Command>" << endl;
 			return 0;
 		}
-		system(CaCMDS.c_str());
+		system(UseCMD.c_str());
 		return 0;
 	}
 	if (ReadCMD == "list") {
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
-		if (CaCMDS == "") {
-			cout << ReadCMD << " Command:  " << endl;
+		UseRCMD = CleanAuto(UseRCMD, "list ");
+        UseRCMD = CleanAuto(UseRCMD, "list");
+		UseRCMD = CleanAuto(UseRCMD, "anticrashHEAD");
+		if (UseRCMD == "") {
+			cout << VReadCMD << " Command:  " << endl;
 			cout << "Please select you want list" << endl;
 			cout << "Like a  varspace," << endl;
 			return 0;
 		}
-		if (CaCMDS == "varspace") {
+		if (UseRCMD == "varspace") {
 			cout << "Var Space Block :  _" << VarSpace << "_" << endl;
 			cout << "MaxVar :  " << to_string(VarSpaceMax) << endl;
 			return 0;
 		}
-		if (CaCMDS == "vp") {
+		if (UseRCMD == "vp") {
 			cout << "Var Space Block :  _" << VarSpace << "_" << endl;
 			cout << "MaxVar :  " << to_string(VarSpaceMax) << endl;
 			return 0;
 		}
-		cout << "Unknown List :  _" << CaCMDS << "_" << endl;
+		cout << "Unknown List :  _" << UseRCMD << "_" << endl;
 		return 1;
 	}
 	if (ReadCMD == "cout") {
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
-		if (CaCMDS == "") {
-			cout << ReadCMD << " Command:  " << endl;
+		UseCMD = CleanAuto(UseCMD, "cout ");
+		UseCMD = CleanAuto(UseCMD, "cout");
+		UseCMD = CleanAuto(UseCMD, "anticrashHEAD");
+		if (UseCMD == "") {
+			cout << VReadCMD << " Command:  " << endl;
 			cout << " COMMAND :     cout <Message>" << endl;
 			return 0;
 		}
-		if (CaCMDS == "%nextline%") {
+		if (UseCMD == "%nextline%") {
 			cout << endl;
 			return 0;
 		}
-		cout << CaCMDS << endl;
+		cout << UseCMD << endl;
 		return 0;
 	}
 	if (ReadCMD == "cls") {
 		system("cls");
 		return 0;
+	}
+
+	if (brc == 0) {
+		ReadCMD = cutlineblockA(UseCMD, " ", 1);
+		ReadCMD = CleanAuto(ReadCMD, "$");
+		brc = 1;
+		goto BackRollResCMD;
 	}
 
 	return 1;
@@ -576,8 +638,6 @@ void CaRootLoaderX() {
 	return;
 }
 
-ofstream varPort;
-
 //rootlockmode 1-open 0-off
 int ScriptRun(string File, int vercode, int startline, int rootlockmode,string unsafelock) {
 	int readline = startline;
@@ -585,14 +645,16 @@ int ScriptRun(string File, int vercode, int startline, int rootlockmode,string u
 	string AfterTranslate;
 	string VarSpace, ErrCode;
 	string Tercmd;
-	varPort.open("~DVS");
 
 RollBackScript:
 	ReadPoint = LineReader(File, readline);
 	if (ReadPoint == "overline") {
 		cout << endl;
-		cout << "[ WARNING ]   Please add \"end\" on Script" << endl;
+		cout << "[ WARNING ]   Please add $end on Script" << endl;
 		return 1;
+	}
+	if (checkChar(ReadPoint, "$") == 1) {
+		goto SkipTercmd;
 	}
 
 	Tercmd = cutlineblockA(ReadPoint, " ", 1);
@@ -631,14 +693,72 @@ RollBackScript:
 		goto RollBackScript;
 	}
 
+	SkipTercmd:
+	//cout << "Check LockMode" << endl;
 	if (rootlockmode == 1) {
 		writeini(unsafelock, "Run", "Command",ReadPoint);
 		writeini(unsafelock, "Run", "Script", File);
 		writeini(unsafelock, "Run", "Line",to_string(readline));
-		varPort << VarSpace << endl;
+		cmarkfile(unsafelock + "~DVS", VarSpace);
 		writeini(unsafelock, "Run", "FullVersion", Version + "~" + to_string(vercode));
 	}
+	//cout << "TransVar" << endl;
 	AfterTranslate = TransVar(ReadPoint);
+
+	//cout << "Check Var Include" << endl;
+	if (checkChar(AfterTranslate, "#Include") == 1) {
+		string p1 = CleanAuto(AfterTranslate, "#Include(\"");
+		string p2 = CleanAuto(p1, "\");");
+		string out = Replace(p2, "\",\"", " ");
+
+		string FileInclude = cutlineblock(out, 1);
+		string LoadPart = cutlineblock(out, 2);
+
+		if (_access(FileInclude.c_str(), 0)) {
+			cout << endl;
+			cout << endl;
+			cout << "Error, Script Try To load a Null Include. Line :  " << to_string(readline) << endl;
+			cout << "Unable to load from :  " << FileInclude << endl;
+			cout << "File :  _" << FileInclude << "_, Not Found" << endl;
+			return 1;
+		}
+		///PCA 1
+
+		//查找 p1
+		int XCURRLINE = 2;
+
+	ANBackRoll:
+		//获取函数
+
+		string cl_strx = to_string(XCURRLINE);
+
+		//cout << cl_str << endl;
+
+		string GetLineData = LineReader(FileInclude, XCURRLINE);
+		//cout << "Line " << cl_strx << "  INFO :  _" << GetLineData << "_" << endl;
+
+		if (GetLineData == "overline") {
+			cout << endl;
+			cout << endl;
+			cout << "Error, Script Try To load a Null Include. Line :  " << to_string(readline) << endl;
+			cout << "Unable to load from :  " << File << endl;
+			cout << "Head :  _" << LoadPart << "_, Found Failed" << endl;
+			return 1;
+		}
+		//cout << "_" << GetLineData << "_,_" << LoadPart << "_" << endl;
+		if (GetLineData == LoadPart) {
+			//cout << "XCURRLINE :  " << to_string(XCURRLINE) << endl;
+			ScriptRun(FileInclude, vercode, XCURRLINE, 0, "NULL");
+
+			readline++;
+			goto RollBackScript;
+		}
+		XCURRLINE++;
+		goto ANBackRoll;
+
+		//PCA End
+
+	}
 
 	//cout << "Start Roll CMD" << endl;
 	//cout << "----------------------------------------------------------------------------------------------------" << endl;

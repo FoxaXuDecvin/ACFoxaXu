@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
 		string maincore = rootfolder + "\\Calcium.exe";
 
 		if (_access(maincore.c_str(), 0)) {
-			string messageb = "Error. Calcium Root Folder is NULL, Should Found in :  " + maincore;
+			string messageb = Outlang("lang.cac.ErrNoCore") + maincore;
 			MessageBox(0,messageb.c_str(), "Calcium Fast Invoke Error", MB_ICONERROR | MB_OK);
 			return 0;
 		}
@@ -59,11 +59,11 @@ int main(int argc, char* argv[]) {
 			return 0;
 		}
 
-		MessageBox(0, "Error. ParaMeter is Null", "Calcium Fast Invoke Error", MB_ICONERROR | MB_OK);
+		MessageBox(0, Outlang("lang.cac.NULLParaMeter").c_str(),"Calcium Invoke Error", MB_ICONERROR | MB_OK);
 		return 0;
 	}
 	else {
-		MessageBox(0, "Error. Cannot Found Install Calcium information, Please check Calcium is complete to install on your PC", "Calcium Fast Invoke Error", MB_ICONERROR | MB_OK);
+		MessageBox(0, Outlang("lang.cac.NoInstallInfo").c_str(), "Calcium Fast Invoke Error", MB_ICONERROR | MB_OK);
 		return 0;
 	}
 }

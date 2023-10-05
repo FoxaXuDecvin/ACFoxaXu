@@ -42,7 +42,17 @@ string uninstallBLOCK() {
 			else {
 				ShellExecute(0, "runas", CURFile.c_str(), "unreg", 0, SW_SHOW);
 				Sleep(2000);
+				string tempWork = getenv("temp");
+				SetCurrentDirectory(tempWork.c_str());
+				ReDelete:
 				rmfolder(current);
+				Sleep(1000);
+				if (existfolder(current)) {
+					cout << endl;
+					cout << "Close Calcium Process and try again" << endl;
+					cpause("Press any key to Uninstall");
+					goto ReDelete;
+				}
 				rmfolder(PGDataf);
 			}
 		}
@@ -110,8 +120,6 @@ string installAutoBlock(string ProgramRoot) {
 	string newuninst = preroot + "\\Manager~Calcium.exe";
 
 	CopyFile(GetSelfD.c_str(), newuninst.c_str(), 0);
-
-	createlink(PRFile, linkfile, "", "Calcium Program");
 	cout << "Install Complete" << endl;
 	rmfolder(TempF);
 	return "OK";
