@@ -350,7 +350,7 @@ SkipDownloadWDC:
 	string usersel;
 	getline(cin, usersel);
 
-	bool atest = testAdmin(getselfpath() + "\\Plugin");
+	bool atest = testAdmin(DLLPATH);
 	if (atest) {}
 	else {
 		lntype("lang.public.Admin");
