@@ -3,14 +3,16 @@
 #include"ADSF.h"
 
 int main() {
-	RELOAD:
-	SetConsoleTitle("Calcium Shell");
+RELOAD:
 	system("cls");
 	if (InsidePreview == 1) {
 		cout << "-------------------------------------------------------------------" << endl;
 		lntype("lang.public.unrelease");
 		cout << "-------------------------------------------------------------------" << endl;
 	}
+	cout << "----------------------------------------------------------------------" << endl;
+	pulltitle();
+	cout << "----------------------------------------------------------------------" << endl;
 	lntype("lang.shell.welcome");
 	cout << Outlang("lang.shell.ver") << " :  " << Version << "~" << vercode << endl;
 	cout << Outlang("lang.shell.reltime") << " :  " << ComVer << endl;

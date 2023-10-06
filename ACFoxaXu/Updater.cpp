@@ -79,8 +79,12 @@ int main(int argc, char* argv[]) {
 				goto ReCheckUpdate;
 			}
 			if (NewVersion == "geturlfailed") {
-				NoticeB(Outlang("lang.update.failconnect"));
-				return 0;
+				if (atoi(readini(".\\config.ini", "Version", "UpdateSleep").c_str()) == -1) {
+					//Only Check Once a Update On StartUp
+					return 0;
+				}
+				Sleep(atoi(readini(".\\config.ini", "Version", "UpdateSleep").c_str()));
+				goto ReCheckUpdate;
 			}
 
 			//Find New Version

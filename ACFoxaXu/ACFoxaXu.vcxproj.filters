@@ -60,10 +60,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\WinterThemes.ico">
-      <Filter>资源文件</Filter>
-    </Image>
-    <Image Include="..\..\Fox.ico">
+    <Image Include="..\..\CLASS.ico">
       <Filter>资源文件</Filter>
     </Image>
   </ItemGroup>

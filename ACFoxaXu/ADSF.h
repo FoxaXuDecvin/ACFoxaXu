@@ -16,6 +16,11 @@ string CaUpdMain = getselfpath() + "\\CaUpdater.exe";
 string CaOutage = getselfpath() + "\\CaOutage.exe";
 string CONFIGROOT = RunPath + "\\config.ini";
 string settings = RunPath + "\\settings.ini";
+string PROGData = getwinenvfast("ProgramData") + "\\CalciumScript";
+
+string DLLTPATH = readini(CONFIGROOT, "default", "DLLPATH");
+string DLLSPATH = Replace(DLLTPATH, "$CURRENT", getselfpath());
+string DLLPATH = Replace(DLLSPATH, "$PROGDATA", PROGData);
 
 string verinfor = readini(CONFIGROOT, "Version", "CURRENT");
 int vercode = atoi(verinfor.c_str());
@@ -45,6 +50,34 @@ string Outlang(
 
 string VarTrans(string VarSelect) {
 	return VarSelect;
+}
+
+void pulltitle() {
+	string pulldownaddress = getenv("temp");
+	pulldownaddress = pulldownaddress + "\\CalciumPulltitle.txt";
+	if (_access(pulldownaddress.c_str(), 0)) {
+		URLDown(readini(CONFIGROOT, "Version", "PullTitle"), pulldownaddress);
+		Sleep(400);
+		if (_access(pulldownaddress.c_str(), 0)) {
+			return;
+		}
+	}
+	int maxread = 1;
+	string ReadNULLCheck;
+	//获取最大支持范围
+	BackCheckRUN:
+	ReadNULLCheck = LineReaderA(pulldownaddress, maxread);
+	if (ReadNULLCheck == "overline") {
+		maxread--;
+		goto outputPTS;
+	}
+	maxread++;
+	goto BackCheckRUN;
+
+	outputPTS:
+	int PullRand = SpawnRandomNum(1, maxread);
+	cout << LineReaderA(pulldownaddress, PullRand) << endl;
+	return;
 }
 
 void lntype(string block) {
@@ -280,15 +313,103 @@ BackFoundLine:
 	goto BackFoundLine;
 }
 
+// 0 OK
+// 1 FAILED
+int DLLSETUP(string DLLNAME) {
+	TRYAGAINDLLSETUP:
+	cout << endl;
+	lntype("lang.kernel.dllsetup");
+	cout << endl;
+	string WebDoc = getenv("temp");
+	WebDoc = WebDoc + "\\CalciumPLG.txt";
+	if (_access(WebDoc.c_str(),0)){}
+	else {
+		goto SkipDownloadWDC;
+	}
+
+	URLDown(readini(CONFIGROOT, "Version", "PluginAPI"), WebDoc);
+	Sleep(800);
+	if (_access(WebDoc.c_str(), 0)) {
+		lntype("lang.kernel.errorwebdoc");
+		cpause(Outlang("lang.public.PTA"));
+		goto TRYAGAINDLLSETUP;
+	}
+	
+SkipDownloadWDC:
+	string WDLLRead = readini(WebDoc, "PluginServer", DLLNAME);
+	if (WDLLRead == "readini-failed") {
+		lntype("lang.kernel.dllnotfound");
+		cout << "DLL :  _" << DLLNAME << "_" << endl;
+ 		cpause(Outlang("lang.public.PAK"));
+		return 1;
+	}
+	cout << endl;
+	lntype("lang.kernel.dllsetupNow");
+	cout << "Plugin :  _" << DLLNAME << "_.  Info  :   " << readini(WebDoc, "PluginServer", DLLNAME + "-INFO") << endl;
+	cout << "Please Select \" y/n \" (default: y)>";
+	string usersel;
+	getline(cin, usersel);
+
+	bool atest = testAdmin(getselfpath() + "\\Plugin");
+	if (atest) {}
+	else {
+		lntype("lang.public.Admin");
+		cpause(Outlang("lang.public.PAK"));
+		return 1;
+	}
+
+	if (usersel == "") {
+		usersel = "y";
+	}
+	if (usersel == "Y") {
+		usersel = "y";
+	}
+
+	if (usersel == "y") {
+		string dllsetpath = DLLPATH + "\\" + DLLNAME;
+		cout << "Install Plugin :  " << WDLLRead << ".  to  " << dllsetpath << endl;
+		URLDown(WDLLRead, dllsetpath);
+		Sleep(800);
+
+		if (_access(dllsetpath.c_str(), 0)) {
+			cout << "Failed to Download Plugin" << endl;
+			cpause(Outlang("lang.public.PAK"));
+			return 1;
+		}
+
+		cout << "Plugin Install OK" << endl;
+
+		return 0;
+	}
+
+	return 1;
+}
+
 //0 NoFile
 //1 NULL Plugin
 //2 Plugin Load Error
 //3 OK
 int dllregister(string DLLNAME) {
+	ReLoadDLLREG:
 	DLLNAME = Replace(DLLNAME, "\"", "");
 	//cout << "StartLoadDLL" << endl;
 	if (_access(DLLNAME.c_str(), 0)) {
-		return 0;
+		string newpath = DLLPATH;
+		mdfolder(newpath);
+		string nDLLNAME = newpath + "\\" + DLLNAME;
+		if (_access(nDLLNAME.c_str(), 0)) {
+			cout << "DLL ACTIVITY" << endl;
+			//DLL Activity
+			int BACKDSP = DLLSETUP(DLLNAME);
+			if (BACKDSP == 1) {
+				cout << "DLL Error" << endl;
+				return 0;
+			}
+			goto ReLoadDLLREG;
+		}
+		else {
+			DLLNAME = nDLLNAME;
+		}
 	}
 	//cout << "LoadAPI" << endl;
 	int back = DllCheckPlugin(DLLNAME);
@@ -538,6 +659,10 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << "MaxVar :  " << to_string(VarSpaceMax) << endl;
 			return 0;
 		}
+		if (CaCMDS == "dllroot") {
+			cout << "DLL ROOT  :  _" << DLLPATH << "_" << endl;
+			return 0;
+		}
 		cout << "Unknown List :  _" << CaCMDS << "_" << endl;
 		return 1;
 	}
@@ -576,13 +701,12 @@ void CaRootLoaderX() {
 	return;
 }
 
-
 //rootlockmode 1-open 0-off
 int ScriptRun(string File, int vercode, int startline, int rootlockmode,string unsafelock) {
 	int readline = startline;
 	string ReadPoint;
 	string AfterTranslate;
-	string VarSpace, ErrCode;
+	string ErrCode;
 	string Tercmd;
 
 RollBackScript:

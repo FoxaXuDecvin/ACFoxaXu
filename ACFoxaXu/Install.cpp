@@ -181,6 +181,21 @@ int main(int argc,char* argv[]) {
 		//Uninstall
 		if (existfolder(PGDataf)) {
 			string current = readini(PGINSDATA, "Install", "Path");
+			LANGID CURRPC = GetUserDefaultUILanguage();
+			switch (CURRPC)
+			{
+			case 0x0804:
+				cout << "Calcium 已经安装在了 :  " << current << endl;
+				cout << "你想卸载 Calcium 吗?" << endl;
+				cpause("按任意键确认3次...(3)");
+				cpause("...(2)");
+				cpause("...(1)");
+				system("cls");
+				uninstallBLOCK();
+				cpause("Press any key to Exit.... ");
+				return 0;
+				break;
+			}
 			cout << "Calcium is Already install on :  " << current << endl;
 			cout << "Do you want Uninstall Calcium?" << endl;
 			cpause("Make sure...(3)");
@@ -192,7 +207,32 @@ int main(int argc,char* argv[]) {
 			return 0;
 		}
 
-		// Not Install
+		LANGID CURRPC = GetUserDefaultUILanguage();
+		switch (CURRPC)
+		{
+		case 0x0804:
+			cout << "欢迎安装Calcium，你想要安装这个程序吗?" << endl;
+			cout << "此程序会执行自动安装" << endl;
+
+			cout << "自动安装指令 :  " << endl;
+			cout << "        CaSetup.exe --install            自动安装Calcium，无需确认" << endl;
+			cout << "        CaSetup.exe --uninst-auto   自动卸载Calcium，无需确认" << endl;
+			cout << "        CaSetup.exe --reinstall         自动更新，修复Calcium,无需确认" << endl;
+			cout << "程序默认将会安装在 %ProgramFile%\\FoxaXu\\Calcium" << endl;
+			cout << "如果你想安装在其他地方，请使用 CaSetup.exe <path>" << endl;
+			cout << "如果你想创建个离线安装包 .\\LocalInstall 标记文件在CaSetup的根目录" << endl;
+			cout << "Copyright FoxaXu" << endl;
+
+			cout << endl;
+
+			cpause("如果确认安装，请按任意键3次 ...(3)");
+			cpause(" ...(2)");
+			cpause(" ...(1)");
+			installAutoBlock(ProgramRoot);
+			cpause("Press any key to Exit...");
+			return 0;
+			break;
+		}
 		cout << "Welcome to Install Calcium. Do you want Start?" << endl;
 		cout << "The Program will auto install Calcium" << endl;
 
@@ -213,5 +253,5 @@ int main(int argc,char* argv[]) {
 		installAutoBlock(ProgramRoot);
 		cpause("Press any key to Exit...");
 		return 0;
-
+		// Not Install
 }
