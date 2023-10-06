@@ -30,6 +30,7 @@ string KernelFile = getselfpath() + "\\" + readini(CONFIGROOT, "Version", "Kerne
 
 string VarSpace = "varspace;";
 int VarSpaceMax;
+string DLLRegList = "dllreglist;";
 
 string LangOut(string title) {
 	string langfile = readini(settings, "setting", "text");
@@ -389,7 +390,11 @@ SkipDownloadWDC:
 //1 NULL Plugin
 //2 Plugin Load Error
 //3 OK
+//4 Not Need Load Again
 int dllregister(string DLLNAME) {
+	if (checkChar(DLLRegList, DLLNAME) == 1) {
+		return 4;
+	}
 	ReLoadDLLREG:
 	DLLNAME = Replace(DLLNAME, "\"", "");
 	//cout << "StartLoadDLL" << endl;
@@ -441,6 +446,7 @@ int dllregister(string DLLNAME) {
 	//cout << "Make Add" << endl;
 
 	VarSpaceMax=VarSpaceMax + maxvarget;
+	DLLRegList = DLLRegList + DLLNAME + ";";
 
 	//cout << "Complete。。。" << endl;
 	return 3;
@@ -514,6 +520,10 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		}
 		if (dlrback == 3) {
 			lntype("lang.kernel.dllok");
+			return 0;
+		}
+		if (dlrback == 4) {
+			lntype("lang.kernel.dllnotneed");
 			return 0;
 		}
 		return 0;
@@ -661,6 +671,10 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		}
 		if (CaCMDS == "dllroot") {
 			cout << "DLL ROOT  :  _" << DLLPATH << "_" << endl;
+			return 0;
+		}
+		if (CaCMDS == "dllreg") {
+			cout << "DLL Reg List  :  _" << DLLRegList << "_" << endl;
 			return 0;
 		}
 		cout << "Unknown List :  _" << CaCMDS << "_" << endl;
