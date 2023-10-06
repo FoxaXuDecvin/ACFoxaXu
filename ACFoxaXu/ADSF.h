@@ -17,10 +17,12 @@ string CaOutage = getselfpath() + "\\CaOutage.exe";
 string CONFIGROOT = RunPath + "\\config.ini";
 string settings = RunPath + "\\settings.ini";
 string PROGData = getwinenvfast("ProgramData") + "\\CalciumScript";
+string PROGDataMain = getwinenvfast("ProgramData");
 
 string DLLTPATH = readini(CONFIGROOT, "default", "DLLPATH");
 string DLLSPATH = Replace(DLLTPATH, "$CURRENT", getselfpath());
-string DLLPATH = Replace(DLLSPATH, "$PROGDATA", PROGData);
+string DLLAPATH = Replace(DLLSPATH, "$PROGROOT", PROGDataMain);
+string DLLPATH = Replace(DLLAPATH, "$PROGDATA", PROGData);
 
 string verinfor = readini(CONFIGROOT, "Version", "CURRENT");
 int vercode = atoi(verinfor.c_str());
@@ -392,6 +394,7 @@ SkipDownloadWDC:
 //3 OK
 //4 Not Need Load Again
 int dllregister(string DLLNAME) {
+	DLLNAME = Replace(DLLNAME, "\"", "");
 	if (checkChar(DLLRegList, DLLNAME) == 1) {
 		return 4;
 	}
