@@ -3,26 +3,42 @@
 #include"D:\CppHeader\7zipAPI.h"
 #include"D:\CppHeader\GlobalVar.h"
 #include"D:\ACFoxaXuProject\ACFoxaXu\ACFoxaXu\DLLApi.h"
+#include"D:\CppHeader\WinReg.h"
+#include"ParaSet.h"
 using namespace std;
+
+string RunINFO = getselfinfo();
+string RunPath = getselfpath();
+string CaMain = getselfpath() + "\\Calcium.exe";
+string CaUpdMain = getselfpath() + "\\CaMaintain.exe";
+string CaOutage = getselfpath() + "\\CaOutage.exe";
+string CONFIGROOT = RunPath + "\\config.ini";
+string PROGData = getwinenvfast("ProgramData") + "\\CalciumScript";
+string PROGDataMain = getwinenvfast("ProgramData");
+
+//INSTALL 
+string PGDataf = getwinenvfast("ProgramData") + "\\CalciumScript";
+string PGINSDATA = PGDataf + "\\CaInfo.txt";
+
+string StrTrans(string StringInfo) {
+	StringInfo = Replace(StringInfo, "$CURRENT", getselfpath());
+	StringInfo = Replace(StringInfo, "$PROGROOT", PROGDataMain);
+	StringInfo = Replace(StringInfo, "$PROGDATA", PROGData);
+	StringInfo = Replace(StringInfo, "$WINDIR", getwinenvfast("windir"));
+	return StringInfo;
+}
 
 int InsidePreview = 0;
 
 string what = "HelloWord";
 
-string RunINFO = getselfinfo();
-string RunPath = getselfpath();
-string CaMain = getselfpath() + "\\Calcium.exe";
-string CaUpdMain = getselfpath() + "\\CaUpdater.exe";
-string CaOutage = getselfpath() + "\\CaOutage.exe";
-string CONFIGROOT = RunPath + "\\config.ini";
-string settings = RunPath + "\\settings.ini";
-string PROGData = getwinenvfast("ProgramData") + "\\CalciumScript";
-string PROGDataMain = getwinenvfast("ProgramData");
+string DLLPATH = StrTrans(readini(CONFIGROOT, "default", "DLLPATH"));
 
-string DLLTPATH = readini(CONFIGROOT, "default", "DLLPATH");
-string DLLSPATH = Replace(DLLTPATH, "$CURRENT", getselfpath());
-string DLLAPATH = Replace(DLLSPATH, "$PROGROOT", PROGDataMain);
-string DLLPATH = Replace(DLLAPATH, "$PROGDATA", PROGData);
+string DLLRECORD = DLLPATH + "\\DllRecord.txt";
+
+string settings = DLLPATH + "\\ProgramConfig.ini";
+
+string admincheckpath = StrTrans(readini(settings, "Settings", "AdminCheckPath"));
 
 string verinfor = readini(CONFIGROOT, "Version", "CURRENT");
 int vercode = atoi(verinfor.c_str());
@@ -34,14 +50,25 @@ string VarSpace = "varspace;";
 int VarSpaceMax;
 string DLLRegList = "dllreglist;";
 
+//返回正常值，直接显示
 string LangOut(string title) {
 	string langfile = readini(settings, "setting", "text");
 	cout << readini(langfile, "CALCIUM", title) << endl;
 }
 
+//返回正常值，非显示
 string Outlang(
 	string langblock//Set Type Title
 ) {
+	bool ExistDLLRoot = existfolder(DLLPATH);
+	if (ExistDLLRoot) {}
+	else {
+		mdfolder(DLLPATH);
+	}
+	if (_access(settings.c_str(), 0)) {
+		string ResSET = getselfpath() + "\\DefaultSettings.ini";
+		CopyFile(ResSET.c_str(), settings.c_str(), 0);
+	}
 	string PATHROOTLang = readini(settings, "Settings", "Language");
 	string langtext = RunPath + PATHROOTLang;
 	if (_access(langtext.c_str(), 0)) {
@@ -56,6 +83,10 @@ string VarTrans(string VarSelect) {
 }
 
 void pulltitle() {
+	if (InsidePreview == 1) {
+		cout << "Pull Title is Disabled by DebugMode" << endl;
+		return;
+	}
 	string pulldownaddress = getenv("temp");
 	pulldownaddress = pulldownaddress + "\\CalciumPulltitle.txt";
 	if (_access(pulldownaddress.c_str(), 0)) {
@@ -199,6 +230,11 @@ BackTransLate:
 
 void varspaceadd(string VarHead, string varinfo) {
 	VarHead = CleanAuto(VarHead, " ");
+
+	if (varinfo == "") {
+		varinfo = "NULL";
+	}
+
 	varinfo = Replace(varinfo, " ", "%sbar%");
 	varinfo = Replace(varinfo, ";", "%selbar%");
 	varinfo = Replace(varinfo, "%eqbar%", "=");
@@ -349,43 +385,24 @@ SkipDownloadWDC:
 	cout << endl;
 	lntype("lang.kernel.dllsetupNow");
 	cout << "Plugin :  _" << DLLNAME << "_.  Info  :   " << readini(WebDoc, "PluginServer", DLLNAME + "-INFO") << endl;
-	cout << "Please Select \" y/n \" (default: y)>";
-	string usersel;
-	getline(cin, usersel);
-
-	bool atest = testAdmin(DLLPATH);
-	if (atest) {}
-	else {
-		lntype("lang.public.Admin");
-		cpause(Outlang("lang.public.PAK"));
-		return 1;
-	}
-
-	if (usersel == "") {
-		usersel = "y";
-	}
-	if (usersel == "Y") {
-		usersel = "y";
-	}
-
-	if (usersel == "y") {
-		string dllsetpath = DLLPATH + "\\" + DLLNAME;
-		cout << "Install Plugin :  " << WDLLRead << ".  to  " << dllsetpath << endl;
-		URLDown(WDLLRead, dllsetpath);
-		Sleep(800);
-
-		if (_access(dllsetpath.c_str(), 0)) {
+	string dllsetpath = DLLPATH + "\\" + DLLNAME;
+	cout << "Install Plugin :  " << WDLLRead << ".  to  " << dllsetpath << endl;
+	URLDown(WDLLRead, dllsetpath);
+	Sleep(800);
+	if (_access(dllsetpath.c_str(), 0)) {
 			cout << "Failed to Download Plugin" << endl;
 			cpause(Outlang("lang.public.PAK"));
 			return 1;
 		}
 
-		cout << "Plugin Install OK" << endl;
+	cout << "Plugin Install OK" << endl;
 
-		return 0;
-	}
+	fstream CreateDLLReg;
+	CreateDLLReg.open(DLLRECORD, ios::out | ios::app);
+	CreateDLLReg << DLLNAME << endl;
+	CreateDLLReg.close();
 
-	return 1;
+	return 0;
 }
 
 //0 NoFile
@@ -455,6 +472,69 @@ int dllregister(string DLLNAME) {
 	return 3;
 }
 
+//0-OK 1-FAILED
+int DLLUpdate(string DLLNAMEX) {
+	string DLLNAME = CleanAuto(DLLNAMEX, "\"");
+	string dllrootset = DLLPATH + "\\" + DLLNAME;
+
+	if (_access(dllrootset.c_str(), 0)) {
+		cout << "No This Plugin, This Plugin maybe not enabled" << endl;
+		return 1;
+	}
+
+	int dllgetver = dllCurrVersion(dllrootset);
+
+	if (dllgetver == 404) {
+		cout << "Failed to Find DLL Version" << endl;
+		return 1;
+	}
+
+	cout << "Dll Update :  _" << to_string(dllgetver) << "_ .  DLL Name :  _" << DLLNAME << "_." << endl;
+
+	string TempWDC = getenv("temp");
+	string WebDoc = TempWDC + "\\CalciumPLG.txt";
+
+	if (_access(WebDoc.c_str(), 0)) {
+		URLDown(readini(CONFIGROOT, "Version", "PluginAPI"), WebDoc);
+		if (_access(WebDoc.c_str(), 0)) {
+			cout << "Failed to Connect Plugin Server. Please Check your internet." << endl;
+			cout << "or Use other Server" << endl;
+			return 1;
+		}
+	}
+
+	//GetVersion
+	string NewVersion = readini(WebDoc, "PluginServer", DLLNAME + "-LatestVer");
+	if (NewVersion == "readini-failed") {
+		cout << "This DLL is not on Support List" << endl;
+		return 1;
+	}
+
+	int LatestSupportVer = atoi(NewVersion.c_str());
+
+	if (LatestSupportVer == dllgetver) {
+		cout << "This DLL is Latest Version" << "   DLL NAME :  _" << DLLNAME << "_.  Current Version :  _" << to_string(dllgetver) << "_." << endl;
+		return 0;
+	}
+
+	//New Update
+	cout << "Update Your DLL Library..." << endl;
+	cout << "DLL NAME :  _" << DLLNAME << "_.  Current Version :  _" << to_string(dllgetver) << "_.  New Version :  _" << to_string(LatestSupportVer) << "_" << endl;
+
+	remove(dllrootset.c_str());
+
+	cout << "Download From :  " << readini(WebDoc, "PluginServer", DLLNAME) << "  . To " << dllrootset << endl;
+	URLDown(readini(WebDoc, "PluginServer", DLLNAME), dllrootset);
+	Sleep(300);
+	if (_access(dllrootset.c_str(), 0)) {
+		cout << "Update Failed. Download Failed" << endl;
+		return 1;
+	}
+
+	cout << "Update Complete" << endl;
+	return 0;
+}
+
 // -2 Version Not Allow
 // -1 Normal Exit
 // 0 No Dialog Next
@@ -465,23 +545,48 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 	
 	string ReadCMD = cutlineblockA(CaCMDS, " ", 1);
 	string ReadSource = cutlineblockA(ResCMD, " ", 1);
+	ReadSource = CleanAuto(ReadSource, " ");
 	if (ReadCMD == "") {
 		return 0;
 	}
 
 	BackRollResCMD:
 	//cout << "Read CMD :   _" << ReadCMD << "_" << endl;
+	if (ReadCMD == "NUL") {
+		ReadSource = ResCMD;
+		ReadCMD = ResCMD;
+	}
 	if (ReadSource == "new.var") {
 		ResCMD = CleanAuto(ResCMD, "new.var ");
 		ResCMD = CleanAuto(ResCMD, "new.var");
+		CaCMDS = CleanAuto(CaCMDS, "new.var ");
+		CaCMDS = CleanAuto(CaCMDS, "new.var");
+
 		if (ResCMD == "") {
 			cout << ReadCMD <<" Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     new.var <var> = <data>" << endl;
 			return 0;
 		}
+		if (checkChar(ResCMD, "=")==0) {
+			cout << ReadCMD << " Command:  " << endl;
+			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
+			cout << " COMMAND :     new.var <var> = <data>" << endl;
+			return 0;
+		}
+
 		string VARS = cutlineblockA(ResCMD, "=", 1);
-		string VARINFO = cutlineblockA(ResCMD, "=", 2);
+		ResCMD = CleanAuto(ResCMD, VARS + "=");
+		if (ResCMD == "") {
+			cout << ReadCMD << " Command:  " << endl;
+			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
+			cout << " COMMAND :     new.var <var> = <data>" << endl;
+			return 0;
+		}
+		string VARINFO = cutlineblockA(CaCMDS, "=", 2);
+
+		//cout << "Res CMD _" << ResCMD << "_" << endl;
+
 		varspaceadd(VARS, VARINFO);
 		return 0;
 	}
@@ -495,6 +600,51 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			return 0;
 		}
 		varspacedelete(ResCMD);
+		return 0;
+	}
+
+	if (ReadSource == "dll.var") {
+		CaCMDS = CleanAuto(CaCMDS, "dll.var ");
+		CaCMDS = CleanAuto(CaCMDS, "dll.var");
+		ResCMD = CleanAuto(ResCMD, "dll.var ");
+		ResCMD = CleanAuto(ResCMD, "dll.var");
+		if (ResCMD == "") {
+			cout << ReadCMD << " Command:  " << endl;
+			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
+			cout << "DLLVAR :     dll.var a = <DLLFILE>|<FULL COMMAND>" << endl;
+			cout << "Use on DLL Register" << endl;
+			return 0;
+		}
+
+		string VarSTA = cutlineblockA(ResCMD, "=", 1);
+
+		CaCMDS = cutlineblockA(CaCMDS, "=", 2);
+
+		if (checkChar(CaCMDS, "|") == 0) {
+			cout << "You Need to Register \"|\" to DLLCMD" << endl;
+			return 2;
+		}
+		string DLLNAME = cutlineblockA(CaCMDS, "|", 1);
+		//cout << "DLL :  _" << DLLNAME << "_" << endl;
+		string DCMD = cutlineblockA(CaCMDS, "|", 2);
+		//cout << "DLL :  _" << DLLNAME << "_.  COMMAND :   _" << DCMD << "_" << endl;
+
+		if (_access(DLLNAME.c_str(), 0)) {
+			cout << "_" << DLLNAME << "_" << endl;
+			cout << "DLL Not Exist. DLL CMD" << endl;
+			return 2;
+		}
+
+		//cout << "Run DLL Start" << endl;
+		string nDLLOutage = DllLoadCmd(DLLNAME, DCMD);
+		//cout << "Run DLL End" << endl;
+		if (nDLLOutage == "nul") {
+			cout << "DLL Run Exception" << endl;
+			return 2;
+		}
+
+		varspaceadd(VarSTA, nDLLOutage);
+
 		return 0;
 	}
 
@@ -680,6 +830,39 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << "DLL Reg List  :  _" << DLLRegList << "_" << endl;
 			return 0;
 		}
+		if (CaCMDS == "dllver") {
+			cout << "List All Dll Version" << endl;
+			cout << endl;
+			string ReadP;
+			string dllrootsetN = DLLPATH;
+			int LRRP = 1;
+			int RPTotal = 0;
+
+			int dllgetver;
+		BackReadDLLV:
+			ReadP = LineReader(DLLRECORD, LRRP);
+			if (ReadP == "overline") {
+				cout << "Read Complete" << endl;
+				cout << "Total :  _" << to_string(RPTotal) << "_" << endl;
+				cout << endl;
+				return 0;
+			}
+			string dllrootset = dllrootsetN + "\\" + ReadP;
+			
+			dllgetver = dllCurrVersion(dllrootset);
+
+			if (dllgetver == 404) {
+				//read failed
+				cout << "DLL :  _" << ReadP << "_.  Version :  _ReadError_." << endl;
+			}
+			else {
+				cout << "DLL :  _" << ReadP << "_.  Version :  _" << to_string(dllgetver) << "_." << endl;
+			}
+			
+			LRRP++;
+			RPTotal++;
+			goto BackReadDLLV;
+		}
 		cout << "Unknown List :  _" << CaCMDS << "_" << endl;
 		return 1;
 	}
@@ -703,6 +886,30 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		return 0;
 	}
 
+	//Other
+	if (ReadSource == "update.dll") {
+		CaCMDS = CleanAuto(CaCMDS, "update.dll ");
+		CaCMDS = CleanAuto(CaCMDS, "update.dll");
+		if (CaCMDS == "") {
+			cout << ReadCMD << " Command:  " << endl;
+			cout << " COMMAND :     update.dll <DllName>" << endl;
+			cout << "only support list plugin" << endl;
+			return 0;
+		}
+		CaCMDS = CleanAuto(CaCMDS, "\"");
+		int abdllu = DLLUpdate(CaCMDS);
+		if (abdllu == 1) {
+			cout << "DLL Update Failed :  " << CaCMDS << endl;
+			return 0;
+		}
+		else {
+			cout <<"DLL Check Update Complete :  " << CaCMDS << endl;
+			return 0;
+		}
+		return 0;
+	}
+
+
 	return 1;
 }
 
@@ -719,6 +926,7 @@ void CaRootLoaderX() {
 }
 
 //rootlockmode 1-open 0-off
+//Return Num :  1=Exception 0=Normal
 int ScriptRun(string File, int vercode, int startline, int rootlockmode,string unsafelock) {
 	int readline = startline;
 	string ReadPoint;
@@ -728,6 +936,14 @@ int ScriptRun(string File, int vercode, int startline, int rootlockmode,string u
 
 RollBackScript:
 	ReadPoint = LineReader(File, readline);
+	if (ReadPoint == "") {
+		readline++;
+		goto RollBackScript;
+	}
+	if (checkChar(ReadPoint, "$") == 1) {
+		readline++;
+		goto RollBackScript;
+	}
 	if (ReadPoint == "overline") {
 		cout << endl;
 		cout << "[ WARNING ]   Please add \"end\" on Script" << endl;
@@ -748,7 +964,7 @@ RollBackScript:
 		goto RollBackScript;
 	}
 	if (Tercmd == "#onlyadmin") {
-		cout << "Check Administrator" << endl;
+		//cout << "Check Administrator" << endl;
 		bool TestOAV = testAdmin(readini(settings, "Settings", "AdminCheckPath"));
 		if (TestOAV) {
 			cout << "Run On Administrator" << endl;
@@ -769,6 +985,8 @@ RollBackScript:
 		readline++;
 		goto RollBackScript;
 	}
+	//cout << "TerCMD :  _" << Tercmd << "_" << endl;
+	//cout << "No TerCMD" << endl;
 
 	if (rootlockmode == 1) {
 		writeini(unsafelock, "Run", "Command",ReadPoint);
@@ -776,6 +994,8 @@ RollBackScript:
 		writeini(unsafelock, "Run", "Line",to_string(readline));
 		writeini(unsafelock, "Run", "FullVersion", Version + "~" + to_string(vercode));
 		writeini(unsafelock, "Run", "VarSpace", VarSpace);
+		writeini(unsafelock, "Run", "DllregList", DLLRegList);
+		writeini(unsafelock, "Run", "LaunchPara", LaunchParameter);
 	}
 	AfterTranslate = TransVar(ReadPoint);
 
@@ -827,4 +1047,105 @@ RollBackScript:
 	remove(unsafelock.c_str());
 	readline++;
 	goto RollBackScript;
+}
+
+string linkfile = getwinenvfast("public") + "\\Desktop\\Calcium Script.lnk";
+string COREFILE = getselfinfo();
+
+void regcalcium() {
+	int TSAREG = testAdminA();
+	if (TSAREG == 1) {
+		cout << "Calcium Register" << endl;
+		system("reg add HKEY_CLASSES_ROOT\\CalciumPackage /ve /t REG_SZ /d \"Calcium Package Program\" /f");
+		system("reg add HKEY_CLASSES_ROOT\\CalciumPackage\\shell /ve /t REG_SZ /d  \"open\" /f");
+		system("reg add HKEY_CLASSES_ROOT\\CalciumPackage\\shell\\open\\command /ve /t REG_SZ /f /d \"Cac.exe -capt \\\"%1\\\"\"");
+
+		system("reg add HKEY_CLASSES_ROOT\\CalciumPackage\\shell\\runas /f");
+		system("reg add HKEY_CLASSES_ROOT\\CalciumPackage\\shell\\runas\\command /ve /t REG_SZ /f /d \"Cac.exe -capt \\\"%1\\\"\"");
+
+		system("reg add HKEY_CLASSES_ROOT\\CalciumScript /ve /t REG_SZ /d \"Calcium Run Script\" /f");
+		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell /ve /t REG_SZ /d  \"open\" /f");
+
+		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\open /f");
+		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\open\\command /ve /t REG_SZ /f /d \"Cac.exe -casp \\\"%1\\\"\"");
+		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\runas /f");
+
+		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\runas\\command /ve /t REG_SZ /f /d \"Cac.exe -casp\\\"%1\\\"\"");
+		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\edit /f");
+		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\edit\\command /ve /t REG_SZ /f /d \"Notepad.exe \\\"%1\\\"\"");
+
+		system("reg add HKEY_CLASSES_ROOT\\.ca /ve /t REG_SZ /d  \"CalciumScript \" /f");
+		system("reg add HKEY_CLASSES_ROOT\\.cascript /ve /t REG_SZ /d  \"CalciumScript \" /f");
+		system("reg add HKEY_CLASSES_ROOT\\.casp /ve /t REG_SZ /d  \"CalciumScript \" /f");
+		system("reg add HKEY_CLASSES_ROOT\\.capt /ve /t REG_SZ /d  \"CalciumPackage \" /f");
+
+		string cmds = "reg add HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run /v \"Calcium Auto Update\" /t REG_SZ /d \"" + CaUpdMain +"\"";
+		//cout << "_" << cmds << "_" << endl;
+		system(cmds.c_str());
+
+		//添加PATH
+		SetCurrentDirectory(getselfpath().c_str());
+		string cacore = getwinenvfast("SystemRoot") + "\\cac.exe";
+		if (_access(".\\Cac.exe", 0)) {
+			Sleep(3000);
+			if (_access(".\\Cac.exe", 0)) {
+				MessageBox(0, "Error, Cac Fast Invoke is Missing on Install", "Auto Register calcium", MB_ICONERROR | MB_OK);
+			}
+		}
+		CopyFile(".\\Cac.exe", cacore.c_str(), 0);
+		string MainTain = getselfpath() + "\\CaMainTain.exe";
+
+		ShellExecute(0, "runas", MainTain.c_str(), 0, 0, SW_SHOW);
+
+		createlink(getselfinfo(), linkfile, "", "Calcium Program");
+		mdfolder(PGDataf);
+		writeini(PGINSDATA, "Install", "Path", getselfpath());
+
+		system("assoc .ca=CalciumScript");
+		system("assoc .cascript=CalciumScript");
+		system("assoc .casp=CalciumScript");
+		system("assoc .capt=CalciumPackage");
+		cout << "Complete" << endl;
+		return;
+	}
+	MessageBox(0, "Using Administrator Run", "Run Notice", MB_OK);
+	ShellExecute(0, "runas", COREFILE.c_str(), "-reg", 0, SW_SHOW);
+	return;
+}
+
+void unregcalcium() {
+	int TSAREG = testAdminA();
+	if (TSAREG==1) {
+		cout << "Calcium UnRegister" << endl;
+		cout << "Taskkill CaMainTain" << endl;
+		ShellExecute(0, "runas", "taskkill.exe", "/f /im CaMainTain.exe", 0, SW_HIDE);
+		cout << "Delete Register" << endl;
+		system("reg delete HKEY_CLASSES_ROOT\\CalciumScript /f");
+		system("reg delete HKEY_CLASSES_ROOT\\CalciumPackage /f");
+		system("reg delete HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run /v \"Calcium Auto Update\" /f");
+		system("reg delete HKEY_CLASSES_ROOT\\.ca /f");
+		system("reg delete HKEY_CLASSES_ROOT\\.casp /f");
+		system("reg delete HKEY_CLASSES_ROOT\\.cascript /f");
+		system("reg delete HKEY_CLASSES_ROOT\\.capt /f");
+		system("reg delete HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\.capt /f");
+		system("reg delete HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\.ca /f");
+		system("reg delete HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\.casp /f");
+		system("reg delete HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\.cascript /f");
+		system("reg delete HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.ca /f");
+		system("reg delete HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.casp /f");
+		system("reg delete HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.cascript /f");
+		system("reg delete HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.capt /f");
+		//删除CAC
+		string cacore = getwinenvfast("SystemRoot") + "\\cac.exe";
+		remove(cacore.c_str());
+		remove(linkfile.c_str());
+
+		rmfolder(PGDataf);
+
+		cout << "Complete" << endl;
+		return;
+	}
+	MessageBox(0, "Using Administrator Run", "Run Notice", MB_OK);
+	ShellExecute(0, "runas", COREFILE.c_str(), "-unreg", 0, SW_SHOW);
+	return;
 }

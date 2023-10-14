@@ -27,6 +27,9 @@
     <ClInclude Include="DLLApi.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ParaSet.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ACFoxaXu.rc">
@@ -34,7 +37,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Calcium.cpp">
+    <ClCompile Include="Calcium.old.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="%28StopUse%29TransLine.cpp">
@@ -46,7 +49,7 @@
     <ClCompile Include="Debug.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Updater.cpp">
+    <ClCompile Include="MainTain.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Shell.cpp">
@@ -56,6 +59,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CaOutage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Calcium.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

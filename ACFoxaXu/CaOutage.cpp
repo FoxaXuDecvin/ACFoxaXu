@@ -56,6 +56,9 @@ int main(int argc, char* argv[]) {
 				string FullVersion = readini(safemark, "Run", "FullVersion");
 				string ErrScript = readini(safemark, "Run", "Script");
 				string crashvarmem = readini(safemark, "Run", "VarSpace");
+				string dllrglist = readini(safemark, "Run", "DllregList");
+				string launchprm = readini(safemark, "Run", "LaunchPara");
+
 
 				//OutLogs
 				string CrashLogPath;
@@ -78,6 +81,7 @@ int main(int argc, char* argv[]) {
 				CrashLog << "                    Crash Command :   _" + ErrCMD +"_" << endl;
 				CrashLog << "                    Crash Address Line :  _" + ErrCMDLine + "_" << endl;
 				CrashLog << "                    Calcium Full Version :  _" + FullVersion + "_" << endl;
+				CrashLog << "                    Launch Command :  _" + launchprm + "_" << endl;
 				CrashLog << endl;
 				CrashLog << "Script :  _" + ErrScript + "_" << endl;
 				CrashLog << "RunTemp :  _" + CaptService + "_" << endl;
@@ -85,6 +89,9 @@ int main(int argc, char* argv[]) {
 				CrashLog << "------------------------------------------------------------------------------------------------------------------------" << endl;
 				CrashLog << "memory Var Space :  " << endl;
 				CrashLog << crashvarmem << endl;
+				CrashLog << "------------------------------------------------------------------------------------------------------------------------" << endl;
+				CrashLog << "DLL Reg List (Calcium Plugin) :   " << endl;
+				CrashLog << dllrglist << endl;
 				CrashLog << "------------------------------------------------------------------------------------------------------------------------" << endl;
 				CrashLog.close();
 				
@@ -105,6 +112,6 @@ int main(int argc, char* argv[]) {
 		}
 
 	}
-	MessageBox(0, Outlang("lang.caoutage.noparameter").c_str(), "Calcium Anti Outage", MB_ICONERROR | MB_OK);
+	MessageBox(0, Outlang("lang.caoutage.noparameter").c_str(),"Calcium Outage Service", MB_ICONERROR | MB_OK);
 	return 0;
 }

@@ -3,9 +3,6 @@ using namespace std;
 
 #pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" ) // 设置入口地址
 
-string PGDataf = getwinenvfast("ProgramData") + "\\CalciumScript";
-string PGINSDATA = PGDataf + "\\CaInfo.txt";
-
 int main(int argc, char* argv[]) {
 	//Auto Find Root
 	if (existfolder) {
@@ -20,46 +17,41 @@ int main(int argc, char* argv[]) {
 			return 0;
 		}
 
-		if (argc == 1) {
-			ShellExecute(0, "open", maincore.c_str(), 0, 0, SW_SHOW);
-			return 0;
+		int ReadLN = 0;
+
+		string parametersA = "";
+
+		//MessageBox(0, "Start Roll CMD", parametersA.c_str(), MB_OK);
+
+	BackGetCommand:
+		if (ReadLN == argc) {
+			//MessageBox(0, parametersA.c_str(), "Notice Para", MB_OK);
+			string clparametersA = cutlineblockA(parametersA, " ", 1);
+			parametersA = CleanAuto(parametersA, clparametersA + " ");
+			//MessageBox(0, parametersA.c_str(), "After Filiter", MB_OK);
+			if (checkChar(parametersA, "-noconsole") == 1) {
+				parametersA = CleanAuto(parametersA, " -noconsole");
+				ShellExecute(0, "open", maincore.c_str(), parametersA.c_str(), 0, SW_HIDE);
+				return 0;
+			}
+			else {
+				ShellExecute(0, "open", maincore.c_str(), parametersA.c_str(), 0, SW_SHOW);
+				return 0;
+			}
 		}
-		if (argc == 2) {
-			int al = 0;
-			al++;
-			string para = argv[al];
+		parametersA = parametersA + argv[ReadLN] + " ";
+		string msbox = "New LocalNum _" + to_string(ReadLN) + "_ CURRENTMAX = _" + to_string(argc) + "_";
+		//MessageBox(0, msbox.c_str(), "COmplete Read", MB_OK);
 
-			ShellExecute(0, "open", maincore.c_str(), para.c_str(), 0, SW_SHOW);
-			return 0;
-		}
-		if (argc == 3) {
-			int al = 0;
-			al++;
-			string Apara = argv[al];
-			al++;
-			string Bpara = argv[al];
+		//MessageBox(0, "Auto Config", parametersA.c_str(), MB_OK);
 
-			string para = Apara + " " + Bpara;
+		msbox = "After LocalNum _" + to_string(ReadLN) + "_ CURRENTMAX = _" + to_string(argc) + "_";
+		//MessageBox(0, msbox.c_str(), "COmplete Read", MB_OK);
+		ReadLN++;
+		//MessageBox(0, "Complete Add", to_string(ReadLN).c_str(), MB_OK);
+		goto BackGetCommand;
 
-			ShellExecute(0, "open", maincore.c_str(), para.c_str(), 0, SW_SHOW);
-			return 0;
-		}
-		if (argc == 4) {
-			int al = 0;
-			al++;
-			string Apara = argv[al];
-			al++;
-			string Bpara = argv[al];
-			al++;
-			string Cpara = argv[al];
-
-			string para = Apara + " " + Bpara + " " + Cpara;
-
-			ShellExecute(0, "open", maincore.c_str(), para.c_str(), 0, SW_SHOW);
-			return 0;
-		}
-
-		MessageBox(0, Outlang("lang.cac.NULLParaMeter").c_str(),"Calcium Invoke Error", MB_ICONERROR | MB_OK);
+		//MessageBox(0, Outlang("lang.cac.NULLParaMeter").c_str(),"Calcium Invoke Error", MB_ICONERROR | MB_OK);
 		return 0;
 	}
 	else {

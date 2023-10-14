@@ -1,20 +1,25 @@
 #include"ADSF.h"
-
+#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" ) // 设置入口地址
 using namespace std;
 
-#pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" ) // 设置入口地址
+//Default Delete Folder
+string Temp = getwinenvfast("temp");
+string TempPKG = getwinenvfast("temp") + "\\CalciumPackage";
+string TempUPD = Temp + "\\UpdateCalcium.exe";
+
+string BLOCKMARKJ = DLLPATH + "\\CalciumUpdateBlock.txt";
 
 void NoticeB(string Info) {
 	MessageBox(0, Info.c_str(), "Notice", MB_ICONQUESTION | MB_OK);
 	return;
 }
 
-void UpdateBLOCK(string Path) {
+void UpdateBLOCK(string Path,int showorhide) {
 	string CURVerPart = readini(".\\config.ini", "Version", "CURRENT");
 	string WebURL = readini(".\\config.ini", "Version", "API");
 	string NewVersion = geturlcode(WebURL);
 
-	string Temp = getwinenvfast("temp");
+	
 	string TempWork = Temp + "\\UpdateCalcium.exe";
 
 	URLDown(readini(".\\config.ini", "Version", "UpdateTool"), TempWork);
@@ -26,16 +31,46 @@ void UpdateBLOCK(string Path) {
 		return;
 	}
 
-	ShellExecute(0, "runas", TempWork.c_str(), "--reinstall", Path.c_str(), SW_SHOW);
+	if (showorhide == 0) {
+		ShellExecute(0, "runas", TempWork.c_str(), "--reinstall", Path.c_str(), SW_HIDE);
+	}
+	else {
+		ShellExecute(0, "runas", TempWork.c_str(), "--reinstall", Path.c_str(), SW_SHOW);
+	}
 	return;
 }
 
-string sysdata = getenv("ProgramData");
-string PGDataf = sysdata + "\\CalciumScript";
-string PGINSDATA = PGDataf + "\\CaInfo.txt";
+void UpdateDLL() {
+	string ReadP;
+	string dllrootsetN = DLLPATH;
+	int LRRP = 1;
+	int RPTotal = 0;
+
+	int dllgetver;
+BackReadDLLV:
+	if (_access(DLLRECORD.c_str(), 0)) {
+		return;
+	}
+	ReadP = LineReader(DLLRECORD, LRRP);
+	if (ReadP == "overline") {
+		return;
+	}
+	DLLUpdate(ReadP);
+
+	LRRP++;
+	RPTotal++;
+	goto BackReadDLLV;
+}
 
 int main(int argc, char* argv[]) {
 	//Anti Run Much
+	//CheckConfig
+
+	string MTSwitch = readini(settings, "Settings", "AutoUpdate");
+	if (MTSwitch == "open"){}
+	else {
+		return 0;
+	}
 
 	string systemp = getenv("temp");
 	string sessionlock = systemp + "\\MarkCaUpdate.lock";
@@ -56,6 +91,17 @@ int main(int argc, char* argv[]) {
 		SessionLockOpen.open(sessionlock);
 		SessionLockOpen << "Hello World" << endl;
 
+		//Maintain Part
+		Sleep(2000);
+		rmfolder(TempPKG.c_str());
+		remove(TempUPD.c_str());
+		string CaTemp = getenv("temp");
+		string CaPLGWebDoc = CaTemp + "\\CalciumPLG.txt";
+		remove(CaPLGWebDoc.c_str());
+		string CaPTFile = CaTemp + "\\CalciumPulltitle.txt";
+		remove(CaPTFile.c_str());
+		UpdateDLL();
+
 		//Auto Update Services
 		if (_access(PGINSDATA.c_str(), 0)) {
 			MessageBox(0, Outlang("lang.update.failpath").c_str(), PGINSDATA.c_str(), MB_ICONERROR | MB_OK);
@@ -75,7 +121,7 @@ int main(int argc, char* argv[]) {
 					//Only Check Once a Update On StartUp
 					return 0;
 				}
-				Sleep(atoi(readini(".\\config.ini", "Version", "UpdateSleep").c_str()));
+				Sleep(atoi(readini(CONFIGROOT, "Version", "UpdateSleep").c_str()));
 				goto ReCheckUpdate;
 			}
 			if (NewVersion == "geturlfailed") {
@@ -83,20 +129,35 @@ int main(int argc, char* argv[]) {
 					//Only Check Once a Update On StartUp
 					return 0;
 				}
-				Sleep(atoi(readini(".\\config.ini", "Version", "UpdateSleep").c_str()));
+				Sleep(atoi(readini(CONFIGROOT, "Version", "UpdateSleep").c_str()));
 				goto ReCheckUpdate;
 			}
 
 			//Find New Version
+			
+			string BlockVer = LineReader(BLOCKMARKJ, 1);
+			if (BlockVer == NewVersion) {
+				Sleep(atoi(readini(CONFIGROOT, "Version", "UpdateSleep").c_str()));
+				goto ReCheckUpdate;
+			}
+
+			int SelectNVGiveUp = MessageBox(0, Outlang("lang.update.nutrueorfalse").c_str(), "It`s Time to Update", MB_ICONWARNING | MB_YESNO);
+			if (SelectNVGiveUp == 6) {}
+			else {
+				cmarkfile(BLOCKMARKJ, NewVersion);
+				MessageBox(0, "This Version is Blocked.", NewVersion.c_str(), MB_OK);
+				Sleep(atoi(readini(CONFIGROOT, "Version", "UpdateSleep").c_str()));
+				goto ReCheckUpdate;
+			}
 
 			//Auto Update
-			if (bool a = testAdmin("C:")) {}
+			if (bool a = testAdmin(admincheckpath)) {}
 			else {
 				ShellExecute(0, "runas", getselfinfo().c_str(), 0, 0, SW_SHOW);
 				return 0;
 			}
 
-			UpdateBLOCK(curfolder);
+			UpdateBLOCK(curfolder,0);
 
 			return 0;
 
@@ -150,7 +211,7 @@ int main(int argc, char* argv[]) {
 					MessageBoxA(0, Outlang("lang.update.portableunsupport").c_str(), NewVersion.c_str(), MB_ICONERROR | MB_OK);
 					return 0;
 				}
-				UpdateBLOCK(argv[alang]);
+				UpdateBLOCK(argv[alang],1);
 
 				return 0;
 			}
@@ -166,6 +227,6 @@ int main(int argc, char* argv[]) {
 		}
 	}
 	
-	MessageBox(0, "NullParameter", "Calcium Update Service", MB_ICONERROR | MB_OK);
+	MessageBox(0, "NullParameter", "Calcium MainTain Service", MB_ICONERROR | MB_OK);
 	return 0;
 }

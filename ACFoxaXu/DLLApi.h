@@ -4,7 +4,9 @@
 typedef int(*DllDebugTest)();
 typedef string(*DllHeadCheck)();
 typedef string(*DllLoadCommand)(string Command);
+typedef string(*DllLoadCommandA)(string Command);
 typedef string(*DllReg)();
+typedef int(*DllCUV)();
 
 string cutlineblockB(string lines, string cutmark, int line) {
 	string backapi;
@@ -46,7 +48,6 @@ NextRollCR:
 	goto NextRollCR;
 }
 
-
 int DllLoadDebug(string DLLNAME) {
 	DllDebugTest PluginHelloWorld;
 	HINSTANCE loadadll;
@@ -61,6 +62,7 @@ int DllLoadDebug(string DLLNAME) {
 		return 1002;
 	}
 	PluginHelloWorld();
+	FreeLibrary(loadadll);
 	return 0;
 }
 
@@ -78,6 +80,7 @@ int DllCheckPlugin(string DLLNAME) {
 		return 1;
 	}
 	string BLOCK = CaPluginTest();
+	FreeLibrary(loadadll);
 	if (BLOCK == "caplugintrue") {
 		return 0;
 	}
@@ -100,6 +103,7 @@ int DllLoad(string DLLNAME, string Command) {
 		return 1;
 	}
 	string backpg = PluginCommand(Command);
+	FreeLibrary(loadadll);
 	if (backpg == "NO") {
 		return 1;
 	}
@@ -107,6 +111,24 @@ int DllLoad(string DLLNAME, string Command) {
 		return 0;
 	}
 	
+}
+
+string DllLoadCmd(string DLLNAME, string Command) {
+	DllLoadCommandA PluginCommandA;
+	HINSTANCE loadadll;
+	loadadll = LoadLibrary(DLLNAME.c_str());
+	if (loadadll == NULL) {
+		FreeLibrary(loadadll);
+		return "nul";
+	}
+	PluginCommandA = (DllLoadCommandA)GetProcAddress(loadadll, "PluginCommandA");
+	if (PluginCommandA == NULL) {
+		FreeLibrary(loadadll);
+		return "nul";
+	}
+	string backpg = PluginCommandA(Command);
+	FreeLibrary(loadadll);
+	return backpg;
 }
 
 // BLOCK == 1 Return Var
@@ -130,8 +152,27 @@ string DLLRegAPI(string DLLNAME,int BLOCK) {
 	}
 
 	string FULLVARD = DLLRegVar();
+	FreeLibrary(loadadll);
 
 	string AutoCUT = cutlineblockB(FULLVARD, "&", BLOCK);
 	
 	return AutoCUT;
+}
+
+int dllCurrVersion(string DLLNAME) {
+	DllCUV currentver;
+	HINSTANCE loadadll;
+	loadadll = LoadLibrary(DLLNAME.c_str());
+	if (loadadll == NULL) {
+		FreeLibrary(loadadll);
+		return 404;
+	}
+	currentver = (DllCUV)GetProcAddress(loadadll, "currentver");
+	if (currentver == NULL) {
+		FreeLibrary(loadadll);
+		return 404;
+	}
+	int acuV = currentver();
+	FreeLibrary(loadadll);
+	return acuV;
 }

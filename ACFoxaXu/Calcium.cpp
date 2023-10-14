@@ -1,21 +1,22 @@
 //Calcium Language
 #include "ADSF.h"
 #include"resource.h"
-#include"D:\CppHeader\WinReg.h"
 #include"D:\CppHeader\winapicore.h"
 //定义ACF的版本信息
 
 string PATH = getselfpath();
-string COREFILE = getselfinfo();
 
 string VCNum = to_string(vercode);
 string ConfigINI = PATH + "\\config.ini";
-string TempCAPT = getwinenvfast("temp") + "\\CalciumPackage\\" + to_string(SpawnRandomNum(11111111, 99999999));
+string TempCAPT = getwinenvfast("temp") + "\\CalciumPackage\\" + to_string(SpawnRandomNum(11111111,99999999));
 
-string linkfile = getwinenvfast("public") + "\\Desktop\\Calcium Script.lnk";
+//LaunchData
+string LoadFile = "NUL";
+int LoadMode;//1=CASP.2=CAPT
+string parametersA = "";
 
-//成功返回 1，失败返回 0
-int packloader(string packfile,string carun,string TCAPT) {
+//0 Error, 1 Normal
+int packloader(string packfile, string carun, string TCAPT) {
 	string NRootLock = TCAPT + "\\session.lock";
 	string Nsafemark = TCAPT + "\\unsafe.lock";
 	//start
@@ -52,9 +53,8 @@ int packloader(string packfile,string carun,string TCAPT) {
 		RootLockS.open(NRootLock);
 		RootLockS << "Lock" << endl;
 
-		ShellExecute(0, "open", CaOutage.c_str(), TCAPT.c_str(),getselfpath().c_str(), SW_SHOW);
-
-		int errlevel = ScriptRun(readini(CaptINI, "pubvar", "default").c_str(), vercode, 2, 1,Nsafemark);
+		ShellExecute(0, "open", CaOutage.c_str(), TCAPT.c_str(), getselfpath().c_str(), SW_SHOW);
+		int errlevel = ScriptRun(readini(CaptINI, "pubvar", "default").c_str(), vercode, 3, 1, Nsafemark);
 		if (errlevel == 1) {
 			lntype("lang.calcium.packageException");
 			return 0;
@@ -71,14 +71,12 @@ int packloader(string packfile,string carun,string TCAPT) {
 		return 0;
 	}
 
-	
-
 	ofstream RootLockS;
 	RootLockS.open(NRootLock);
 	RootLockS << "Lock" << endl;
 
 	ShellExecute(0, "open", CaOutage.c_str(), TCAPT.c_str(), getselfpath().c_str(), SW_SHOW);
-	int errlevel = ScriptRun(carun, vercode, 2, 1,Nsafemark);
+	int errlevel = ScriptRun(carun, vercode, 3, 1, Nsafemark);
 	if (errlevel == 1) {
 		lntype("lang.calcium.packageException");
 		return 0;
@@ -90,257 +88,161 @@ int packloader(string packfile,string carun,string TCAPT) {
 	return 1;
 }
 
-int main(int argc, char*argv[]) {
-	if (argc == 1) {
-		string cmd = "\"\"" + COREFILE + "\" -capt \"" + PATH + readini(PATH + "\\config.ini", "default", "nopara")+"\"\"";
-		cout << Outlang("lang.calcium.DefaultRun") << " :  " << cmd << endl;
-		system(cmd.c_str());
-		string pa = getselfpath() + "\\CaShell.exe";
-		ShellExecute(0, "open", pa.c_str(), 0, 0, SW_SHOW);
-		return 0;
-	}
-	// P <1> <2>
-	if (argc == 2) {
+void listhelp() {
+	cout << endl;
+	cout << "Calcium Script Platform  Help Center" << endl;
+	cout << "Fast Invoke:  (Only Register) " << endl;
+	cout << "                   Cac <COMMAND>" << endl;
+	cout << "Run Parameter " << endl;
+	cout << "                   -reg :  Register on your PC" << endl;
+	cout << "                   -unreg :  Unregister your pc" << endl;
+	cout << "                   -casp :  Run Calcium Script" << endl;
+	cout << "                   -capt :  Run Calcium Package" << endl <<endl;
+	cout << " if you have any problem you can contect us:  " << endl;
+	cout << "                     https://www.foxaxu.com/contact" << endl;
+	cout << " Official Website" << endl;
+	cout << "                     https://calcium.foxaxu.com" << endl;
+	cout << " Calcium Version " << endl;
+	cout << "                     Fulll Version _" << Version << "_.  Version Code :  _" << to_string(vercode) << "_." << endl;
+	cout << "Release Time :  _" << ComVer << "_" << endl;
+	cout << "InsidePreview :  _" << to_string(InsidePreview) << "_" << endl;
+	cout << "Thanks your using" << endl;
+	cout << endl;
+	return;
+}
 
-		int al = 0;
-		al++;
-		string ParaFile = argv[al];
-		if (ParaFile == "reg") {
-			if (bool r = testAdmin("C:")) {
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumPackage /ve /t REG_SZ /d \"Calcium Package Program\" /f", SW_SHOW);
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumPackage\\shell /ve /t REG_SZ /d  \"open\" /f", SW_SHOW);
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumPackage\\shell\\open\\command /ve /t REG_SZ /f /d \"Cac.exe -capt \\\"%1\\\"\"", SW_SHOW);
+void StartRunMode() {
+	//cout << "Start Run" << endl;
+	LaunchParameter = parametersA;
 
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumPackage\\shell\\runas /f", SW_SHOW);
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumPackage\\shell\\runas\\command /ve /t REG_SZ /f /d \"Cac.exe -capt \\\"%1\\\"\"", SW_SHOW);
-
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumScript /ve /t REG_SZ /d \"Calcium Run Script\" /f", SW_SHOW);
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell /ve /t REG_SZ /d  \"open\" /f", SW_SHOW);
-
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\open /f", SW_SHOW);
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\open\\command /ve /t REG_SZ /f /d \"Cac.exe \\\"%1\\\"\"", SW_SHOW);
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\runas /f", SW_SHOW);
-
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\runas\\command /ve /t REG_SZ /f /d \"Cac.exe \\\"%1\\\"\"", SW_SHOW);
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\edit /f", SW_SHOW);
-				WinExec("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\edit\\command /ve /t REG_SZ /f /d \"Notepad.exe \\\"%1\\\"\"", SW_SHOW);
-
-				WinExec("reg add HKEY_CLASSES_ROOT\\.ca /ve /t REG_SZ /d  \"CalciumScript \" /f", SW_SHOW);
-				WinExec("reg add HKEY_CLASSES_ROOT\\.cascript /ve /t REG_SZ /d  \"CalciumScript \" /f", SW_SHOW);
-				WinExec("reg add HKEY_CLASSES_ROOT\\.capt /ve /t REG_SZ /d  \"CalciumPackage \" /f", SW_SHOW);
-
-				string cmds = "reg add HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run /v \"Calcium Auto Update\" /t REG_SZ /d \"" + getselfpath() + "\\CaUpdater.exe\"";
-				//cout << "_" << cmds << "_" << endl;
-				WinExec(cmds.c_str(), SW_SHOW);
-
-				//添加PATH
-				SetCurrentDirectory(getselfpath().c_str());
-				string cacore = getwinenvfast("SystemRoot") + "\\cac.exe";
-				if (_access(".\\Cac.exe", 0)) {
-					Sleep(3000);
-					if (_access(".\\Cac.exe", 0)) {
-						MessageBox(0, "Error, Cac Fast Invoke is Missing on Install", "Auto Install calcium", MB_ICONERROR | MB_OK);
-					}
-				}
-				CopyFile(".\\Cac.exe", cacore.c_str(), 0);
-
-				createlink(getselfinfo(), linkfile, "", "Calcium Program");
-
-				system("assoc .ca=CalciumScript");
-				system("assoc .cascript=CalciumScript");
-				system("assoc .capt=CalciumPackage");
-				cout << "Complete" << endl;
-				return 0;
-			}
-			ShellExecute(0, "runas", COREFILE.c_str(), "reg", 0, SW_SHOW);
-			return 0;
+	if (LoadMode == 1) {
+		if (LoadFile == "NUL") {
+			lntype("lang.calcium.DefaultRun");
+			return;
 		}
-		if (ParaFile == "unreg") {
-			if (bool r = testAdmin("C:")) {
-				cout << "Delete Register" << endl;
-				WinExec("reg delete HKEY_CLASSES_ROOT\\CalciumScript /f", SW_SHOW);
-				WinExec("reg delete HKEY_CLASSES_ROOT\\CalciumPackage /f", SW_SHOW);
-				WinExec("reg delete HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run /v \"Calcium Auto Update\" /f", SW_SHOW);
-				WinExec("reg delete HKEY_CLASSES_ROOT\\.ca /f", SW_SHOW);
-				WinExec("reg delete HKEY_CLASSES_ROOT\\.cascript /f", SW_SHOW);
-				WinExec("reg delete HKEY_CLASSES_ROOT\\.capt /f", SW_SHOW);
-				WinExec("reg delete HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\.capt /f", SW_SHOW);
-				WinExec("reg delete HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\.ca /f", SW_SHOW);
-				WinExec("reg delete HKEY_LOCAL_MACHINE\\SOFTWARE\\Classes\\.cascript /f", SW_SHOW);
-				WinExec("reg delete HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.ca /f", SW_SHOW);
-				WinExec("reg delete HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.cascript /f", SW_SHOW);
-				WinExec("reg delete HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\.capt /f", SW_SHOW);
-				//删除CAC
-				string cacore = getwinenvfast("SystemRoot") + "\\cac.exe";
-				remove(cacore.c_str());
-				remove(linkfile.c_str());
-
-				cout << "Complete" << endl;
-				return 0;
-			}
-			ShellExecute(0, "runas", COREFILE.c_str(), "unreg", 0, SW_SHOW);
-			return 0;
-		}
-		if (_access(ParaFile.c_str(), 0)) {
-			cout << "Unable to load from :  " << ParaFile << endl;
-			cout << "Check your type and try again" << endl;
-			cpause("Press any key to Close");
-			cout << endl;
-			return 0;
-		}
-
-		//验证文件头
-		string Head = LineReader(ParaFile, 1);
-		if (Head=="#Calc") {}
-		else {
-			cout << Outlang("lang.calcium.UnableLoad") << " :  " << ParaFile << endl;
-			cout << "File Head is NULL. add #Calc in head" << endl;
-
-			cpause(Outlang("lang.public.PAK"));
-			cout << endl;
-			return 0;
-		}
-
-		//加载脚本
-		int errlevel = ScriptRun(ParaFile,vercode,2,0,"NULL");
-		if (errlevel == 1) {
-			cout << endl;
-			cout << "-------------------------------------------------------------------------------" << endl;
-			lntype("lang.calcium.ErrReport");
-			lntype("lang.public.PAK");
-			cpause(Outlang("lang.public.PAK"));
-			cout << endl;
-			return 0;
-		}
+		mdfolder(TempCAPT);
+		string newfile = TempCAPT + "\\RunScript.ca";
+		CopyFile(LoadFile.c_str(), newfile.c_str(), 0);
+		ShellExecute(0, "open", CaOutage.c_str(), TempCAPT.c_str(), 0, SW_SHOW);
 		
+		string NRootLock = TempCAPT + "\\session.lock";
+		string Nsafemark = TempCAPT + "\\unsafe.lock";
+		SetCurrentDirectory(TempCAPT.c_str());
+
+		ofstream RootLockS;
+		RootLockS.open(NRootLock);
+		RootLockS << "Lock" << endl;
+
+		int backdt = ScriptRun(newfile, vercode, 3, 1, Nsafemark);
+		SetCurrentDirectory(PATH.c_str());
+		if (backdt == 1) {
+			cout << "------------------------------------------------------------" << endl;
+			lntype("lang.calcium.packageException");
+			cpause(Outlang("lang.public.PAK"));
+			return;
+		}
+		return;
+	}
+
+	if (LoadMode == 2) {
+		if (LoadFile == "NUL") {
+			lntype("lang.calcium.DefaultRun");
+			return;
+		}
+		int backdt = packloader(LoadFile, "#default", TempCAPT);
+		if (backdt == 1) {
+			cout << "------------------------------------------------------------" << endl;
+			lntype("lang.calcium.packageException");
+			cpause(Outlang("lang.public.PAK"));
+			return;
+		}
+	}
+
+	listhelp();
+
+	cpause(Outlang("lang.public.PAK"));
+	return;
+}
+
+int main(int argc, char* argv[]) {
+	int ReadLN = 0;
+	int Effcode;
+
+	string curpmd;
+
+	//MessageBox(0, "Start Roll CMD", parametersA.c_str(), MB_OK);
+
+BackGetCommand:
+	//cout << "RLN : _" << to_string(ReadLN) << "_.  argc :  _" << to_string(argc) << "_" << endl;
+	if (ReadLN == argc) {
+		StartRunMode();
 		return 0;
 	}
-	if (argc == 3) {
-		int al = 0;
-		al++;
-		string ParaChar = argv[al];
-		al++;
-		string ParaPack = argv[al];
-		if (ParaChar == "-capt") {
-			int packrt = packloader(ParaPack, "#default", TempCAPT);
-			if (packrt == 1) {
-				// OK
-				return 0;
-			}
-			else {
-				cout << "-------------------------------------------------------------------" << endl;
-				lntype("lang.calcium.ErrReport");
-				lntype("lang.public.PAK");
-				cpause(Outlang("lang.public.PAK"));
-				return 0;
-			}
+	if (ReadLN > argc) {
+		StartRunMode();
+		return 0;
+	}
+	
+	curpmd = argv[ReadLN];
+	//cout << "Get CMD :  _" << curpmd << "_" << endl;
+	parametersA = parametersA + curpmd + " ";
+
+	Effcode = 0;
+
+	if (curpmd == "-capt") {
+		Effcode = 1;
+		ReadLN++;
+		if (ReadLN == argc) {
+			LoadMode = 2;
 		}
-		if (ParaChar == "-casp") {
-			if (_access(ParaPack.c_str(), 0)) {
-				cout << Outlang("lang.calcium.UnableLoad") << " :  " << ParaPack << endl;
-				lntype("lang.calcium.CheckType");
-				cpause(Outlang("lang.public.PAK"));
-				cout << endl;
+		else {
+			curpmd = argv[ReadLN];
+			parametersA = parametersA + curpmd + " ";
+			LoadFile = argv[ReadLN];
+			LoadMode = 2;
+			if (_access(LoadFile.c_str(), 0)) {
+				cout << "Error. File :  _" << LoadFile << "_. Not Exist " << endl;
+				lntype("lang.calcium.packageNULL");
 				return 0;
 			}
-
-			//验证文件头
-			string Head = LineReader(ParaPack, 1);
-			if (Head == "#Calc") {}
-			else {
-				cout << Outlang("lang.calcium.UnableLoad") << " :  " << ParaPack << endl;
-				cout << "File Head is NULL. add #Calc in head" << endl;
-				cpause(Outlang("lang.public.PAK"));
-				cout << endl;
-				return 0;
-			}
-
-			//加载脚本
-			int errlevel = ScriptRun(ParaPack, vercode, 2, 0, "NULL");
-			if (errlevel == 1) {
-				cout << endl;
-				cout << "-------------------------------------------------------------------------------" << endl;
-				cout << "File Exit Error :  " << ParaPack << endl;
-				cpause(Outlang("lang.public.PAK"));
-				cout << endl;
-				return 0;
-			}
-
-			return 0;
 		}
 	}
-	// LoadSign
-	if (argc == 4) {
-		int al = 0;
-		al++;
-		string ParaChar = argv[al];
-		al++;
-		string ParaPack = argv[al];
-		al++;
-		string ParaLoadSign = argv[al];
-
-		if (ParaChar == "-capt") {
-			int packrt = packloader(ParaPack, ParaLoadSign, TempCAPT);
-			if (packrt == 1) {
-				// OK
-				return 0;
-			}
-			else {
-				cout << "-------------------------------------------------------------------" << endl;
-				lntype("lang.calcium.ErrReport");
-				lntype("lang.public.PAK");
-				cpause(Outlang("lang.public.PAK"));
+	if (curpmd == "-casp") {
+		Effcode = 1;
+		ReadLN++;
+		if (ReadLN == argc) {
+			LoadMode = 1;
+		}
+		else {
+			LoadFile = argv[ReadLN];
+			curpmd = argv[ReadLN];
+			parametersA = parametersA + curpmd + " ";
+			LoadMode = 1;
+			if (_access(LoadFile.c_str(), 0)) {
+				cout << "Error. File :  _" << LoadFile << "_. Not Exist " << endl;
+				lntype("lang.calcium.packageNULL");
 				return 0;
 			}
 		}
-		if (ParaChar == "-casp") {
-			if (_access(ParaPack.c_str(), 0)) {
-				cout << Outlang("lang.calcium.UnableLoad") << " :  " << ParaPack << endl;
-				lntype("lang.calcium.CheckType");
-				cpause(Outlang("lang.public.PAK"));
-				cout << endl;
-				return 0;
-			}
-
-			//查找目标
-			string EPoint = "Find~Header";
-			WriteIntGlobal(EPoint, 2);
-
-		ABackRoll:
-			//获取函数
-			int CURRLINE = GetIntGlobal(EPoint);
-			string cl_str = to_string(CURRLINE);
-
-			//cout << cl_str << endl;
-
-			string GetLineData = LineReader(ParaPack, CURRLINE);
-
-			if (GetLineData == "overline") {
-				cout << endl;
-				cout << "Unable to load from :  " << ParaPack << endl;
-				cout << "Head :  _" << ParaLoadSign << "_, load failed, not exist" << endl;
-				cpause(Outlang("lang.public.PAK"));
-				cout << endl;
-				return 0;
-			}
-			if (GetLineData == ParaLoadSign) {
-				int errlevel = ScriptRun(ParaPack, vercode, CURRLINE, 0,"NULL");
-				if (errlevel == 1) {
-					cout << endl;
-					cout << "-------------------------------------------------------------------------------" << endl;
-					cout << "File Exit Error :  " << ParaPack << endl;
-					cpause(Outlang("lang.public.PAK"));
-					cout << endl;
-					return 0;
-				}
-
-				return 0;
-			}
-			CURRLINE++;
-			WriteIntGlobal(EPoint, CURRLINE);
-			goto ABackRoll;
-
-			return 0;
- 		}
 	}
+	if (curpmd == "-reg") {
+		lntype("lang.public.Admin");
+		regcalcium();
+		return 0;
+	}
+	if (curpmd == "-unreg") {
+		lntype("lang.public.Admin");
+		unregcalcium();
+		return 0;
+	}
+
+	if (ReadLN == 0){}
+	else {
+		if (Effcode == 0) {
+			cout << "Unknown Calcium Parameter :  _" << curpmd << "_" << endl;
+		}
+	}
+
+	ReadLN++;
+	goto BackGetCommand;
 }

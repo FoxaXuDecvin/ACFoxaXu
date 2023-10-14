@@ -1,5 +1,4 @@
 #include "ADSF.h"
-#include"D:\CppHeader\WinReg.h"
 using namespace std;
 
 string preroot = getwinenvfast("ProgramFiles") + "\\FoxaXu";
@@ -7,16 +6,12 @@ string ProgramRoot = getwinenvfast("ProgramFiles") + "\\FoxaXu\\Calcium";
 string PRFile = ProgramRoot + "\\Calcium.exe";
 string PRUpd = ProgramRoot + "\\CaUpdater.exe";
 string PRInfo = ProgramRoot + "\\DefaultICON.ico";
-string PGDataf = getwinenvfast("ProgramData") + "\\CalciumScript";
-string PGINSDATA = PGDataf + "\\CaInfo.txt";
-
 string GetSelfD = getselfinfo();
 
-string linkfile = getwinenvfast("public") + "\\Desktop\\Calcium Script.lnk";
 
 string uninstallBLOCK() {
 	//Uninstall
-	ShellExecute(0,"runas","taskkill.exe","/f /im CaUpdater.exe",0,SW_HIDE);
+	
 	Sleep(1000);
 	remove(linkfile.c_str());
 		if (_access(PGINSDATA.c_str(), 0)) {
@@ -40,7 +35,7 @@ string uninstallBLOCK() {
 				rmfolder(PGDataf);
 			}
 			else {
-				ShellExecute(0, "runas", CURFile.c_str(), "unreg", 0, SW_SHOW);
+				ShellExecute(0, "runas", CURFile.c_str(), "-unreg", 0, SW_SHOW);
 				Sleep(2000);
 				string tempWork = getenv("temp");
 				SetCurrentDirectory(tempWork.c_str());
@@ -108,16 +103,12 @@ string installAutoBlock(string ProgramRoot) {
 		cpause("Press any key to cancel");
 		return "NULL";
 	}
-	ShellExecute(0, "runas", PRFile.c_str(), "reg", 0, SW_SHOW);
-
-	string ParaMet = "\"" +  ProgramRoot + "\" -auto";
-
-	ShellExecute(0, "runas", PRUpd.c_str(),0, 0, SW_SHOW);
+	ShellExecute(0, "runas", PRFile.c_str(), "-reg", 0, SW_SHOW);
 
 	mdfolder(PGDataf);
 	writeini(PGINSDATA, "Install", "Path", ProgramRoot);
 
-	string newuninst = preroot + "\\Manager~Calcium.exe";
+	string newuninst = preroot + "\\Setup~Calcium.exe";
 
 	CopyFile(GetSelfD.c_str(), newuninst.c_str(), 0);
 	cout << "Install Complete" << endl;
