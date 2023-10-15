@@ -58,7 +58,8 @@ int main(int argc, char* argv[]) {
 				string crashvarmem = readini(safemark, "Run", "VarSpace");
 				string dllrglist = readini(safemark, "Run", "DllregList");
 				string launchprm = readini(safemark, "Run", "LaunchPara");
-
+				string ErrRecD = readini(safemark, "Run", "ErrRec");
+				string WarRecD = readini(safemark, "Run", "WarRec");
 
 				//OutLogs
 				string CrashLogPath;
@@ -86,6 +87,13 @@ int main(int argc, char* argv[]) {
 				CrashLog << "Script :  _" + ErrScript + "_" << endl;
 				CrashLog << "RunTemp :  _" + CaptService + "_" << endl;
 				CrashLog << "Crash Report is Save on :  _" + CrashLogPath + "_" << endl;
+				CrashLog << "Record Event:    Error: _" << ErrRecD << "_    Warning: _" << WarRecD << "_." << endl;
+				CrashLog << "------------------------------------------------------------------------------------------------------------------------" << endl;
+				CrashLog << "User PC Info " << endl;
+				CrashLog << "User Name :  _" << $PCUserName << "_" << endl;
+				CrashLog << "Local Machine Temp :  _" << $PCTemp << "_" << endl;
+				CrashLog << "System Driver :  _" << $PCSYSDRV << "_" << endl;
+				CrashLog << "Environment Path :  _" << $PCPATH << "_" << endl;
 				CrashLog << "------------------------------------------------------------------------------------------------------------------------" << endl;
 				CrashLog << "memory Var Space :  " << endl;
 				CrashLog << crashvarmem << endl;

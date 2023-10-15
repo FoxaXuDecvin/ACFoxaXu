@@ -45,7 +45,7 @@ string uninstallBLOCK() {
 				if (existfolder(current)) {
 					cout << endl;
 					cout << "Close Calcium Process and try again" << endl;
-					cpause("Press any key to Uninstall");
+					Sleep(1000);
 					goto ReDelete;
 				}
 				rmfolder(PGDataf);

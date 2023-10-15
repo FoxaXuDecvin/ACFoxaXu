@@ -566,12 +566,14 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << ReadCMD <<" Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     new.var <var> = <data>" << endl;
+			WarningRecord++;
 			return 0;
 		}
 		if (checkChar(ResCMD, "=")==0) {
 			cout << ReadCMD << " Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     new.var <var> = <data>" << endl;
+			WarningRecord++;
 			return 0;
 		}
 
@@ -581,6 +583,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << ReadCMD << " Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     new.var <var> = <data>" << endl;
+			WarningRecord++;
 			return 0;
 		}
 		string VARINFO = cutlineblockA(CaCMDS, "=", 2);
@@ -597,6 +600,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << ReadCMD << " Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     del.var <var>" << endl;
+			WarningRecord++;
 			return 0;
 		}
 		varspacedelete(ResCMD);
@@ -613,6 +617,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << "DLLVAR :     dll.var a = <DLLFILE>|<FULL COMMAND>" << endl;
 			cout << "Use on DLL Register" << endl;
+			WarningRecord++;
 			return 0;
 		}
 
@@ -622,6 +627,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 
 		if (checkChar(CaCMDS, "|") == 0) {
 			cout << "You Need to Register \"|\" to DLLCMD" << endl;
+			ErrorRecord++;
 			return 2;
 		}
 		string DLLNAME = cutlineblockA(CaCMDS, "|", 1);
@@ -632,6 +638,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		if (_access(DLLNAME.c_str(), 0)) {
 			cout << "_" << DLLNAME << "_" << endl;
 			cout << "DLL Not Exist. DLL CMD" << endl;
+			ErrorRecord++;
 			return 2;
 		}
 
@@ -640,6 +647,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		//cout << "Run DLL End" << endl;
 		if (nDLLOutage == "nul") {
 			cout << "DLL Run Exception" << endl;
+			ErrorRecord++;
 			return 2;
 		}
 
@@ -656,27 +664,33 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << ReadCMD << " Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     LoadDLL <DLLFile>" << endl;
+			WarningRecord++;
 			return 0;
 		}
 		int dlrback = dllregister(CaCMDS);
 		if (dlrback == 0) {
 			lntype("lang.kernel.nothisdll");
+			ErrorRecord++;
 			return 2;
 		}
 		if (dlrback == 1) {
 			lntype("lang.kernel.notcadll");
+			ErrorRecord++;
 			return 2;
 		}
 		if (dlrback == 2) {
 			lntype("lang.kernel.dllfail");
+			ErrorRecord++;
 			return 2;
 		}
 		if (dlrback == 3) {
 			lntype("lang.kernel.dllok");
+			ErrorRecord++;
 			return 0;
 		}
 		if (dlrback == 4) {
 			lntype("lang.kernel.dllnotneed");
+			ErrorRecord++;
 			return 0;
 		}
 		return 0;
@@ -689,10 +703,12 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << "DLLCMD :     $DLLCMD |<DLLFILE>|<FULL COMMAND>" << endl;
 			cout << "Use on DLL Register" << endl;
+			WarningRecord++;
 			return 0;
 		}
 		if (checkChar(CaCMDS, "|") == 0) {
 			cout << "You Need to Register \"|\" to DLLCMD" << endl;
+			ErrorRecord++;
 			return 2;
 		}
 		string DLLNAME = cutlineblockA(CaCMDS, "|", 1);
@@ -703,6 +719,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		if (_access(DLLNAME.c_str(), 0)) {
 			cout << "_" << DLLNAME << "_" << endl;
 			cout << "DLL Not Exist. DLL CMD" << endl;
+			ErrorRecord++;
 			return 2;
 		}
 		
@@ -711,6 +728,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		//cout << "Run DLL End" << endl;
 		if (DLLOutage == 1) {
 			cout << "DLL Run Exception" << endl;
+			ErrorRecord++;
 			return 2;
 		}
 
@@ -724,6 +742,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		if (CaCMDS == "") {
 			cout << ReadCMD << " Command:  " << endl;
 			cout << "Text: :AAA:    Command: goto :AAA:" << endl;
+			WarningRecord++;
 			return 0;
 		}
 
@@ -742,6 +761,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 
 		if (GetLineData == "overline") {
 			cout << "Goto Error:  Head :  _" << CaCMDS << "_" << endl;
+			ErrorRecord++;
 			return 2;
 		}
 		if (GetLineData == CaCMDS) {
@@ -760,6 +780,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		if (CaCMDS == "") {
 			cout << ReadCMD << " Command:  " << endl;
 			cout << " COMMAND :     msgbox.var <var> = <Title>|<Info>" << endl;
+			WarningRecord++;
 			return 0;
 		}
 		string VARS = cutlineblockA(CaCMDS, "=", 1);
@@ -798,6 +819,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		if (CaCMDS == "") {
 			cout << ReadCMD << " Command:  " << endl;
 			cout << " COMMAND :     system <OS Command>" << endl;
+			WarningRecord++;
 			return 0;
 		}
 		system(CaCMDS.c_str());
@@ -863,6 +885,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			RPTotal++;
 			goto BackReadDLLV;
 		}
+		ErrorRecord++;
 		cout << "Unknown List :  _" << CaCMDS << "_" << endl;
 		return 1;
 	}
@@ -872,6 +895,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		if (CaCMDS == "") {
 			cout << ReadCMD << " Command:  " << endl;
 			cout << " COMMAND :     cout <Message>" << endl;
+			WarningRecord++;
 			return 0;
 		}
 		if (CaCMDS == "%nextline%") {
@@ -894,12 +918,14 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << ReadCMD << " Command:  " << endl;
 			cout << " COMMAND :     update.dll <DllName>" << endl;
 			cout << "only support list plugin" << endl;
+			WarningRecord++;
 			return 0;
 		}
 		CaCMDS = CleanAuto(CaCMDS, "\"");
 		int abdllu = DLLUpdate(CaCMDS);
 		if (abdllu == 1) {
 			cout << "DLL Update Failed :  " << CaCMDS << endl;
+			WarningRecord++;
 			return 0;
 		}
 		else {
@@ -908,7 +934,6 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		}
 		return 0;
 	}
-
 
 	return 1;
 }
@@ -996,6 +1021,8 @@ RollBackScript:
 		writeini(unsafelock, "Run", "VarSpace", VarSpace);
 		writeini(unsafelock, "Run", "DllregList", DLLRegList);
 		writeini(unsafelock, "Run", "LaunchPara", LaunchParameter);
+		writeini(unsafelock, "Run", "ErrRec", to_string(ErrorRecord));
+		writeini(unsafelock, "Run", "WarRec", to_string(WarningRecord));
 	}
 	AfterTranslate = TransVar(ReadPoint);
 
@@ -1007,7 +1034,6 @@ RollBackScript:
 	//cout << "----------------------------------------------------------------------------------------------------" << endl;
 	//cout << "VarSpace :  " << VarSpace << endl;
 	//cout << "----------------------------------------------------------------------------------------------------" << endl;
-
 	if (cmrd == -3) {
 		// KernelError
 		cout << endl;
@@ -1029,6 +1055,7 @@ RollBackScript:
 	}
 	if (cmrd == 1) {
 		cout << "Unknown Command :  " << ReadPoint << "  Line :  " << to_string(readline) << endl;
+		ErrorRecord++;
 	}
 	if (cmrd == 2) {
 		cout << endl;
@@ -1043,13 +1070,12 @@ RollBackScript:
 		goto RollBackScript;
 	}
 
-
 	remove(unsafelock.c_str());
 	readline++;
 	goto RollBackScript;
 }
 
-string linkfile = getwinenvfast("public") + "\\Desktop\\Calcium Script.lnk";
+string linkfile = getwinenvfast("public") + "\\Desktop\\CalciumScript Shell.lnk";
 string COREFILE = getselfinfo();
 
 void regcalcium() {
@@ -1097,7 +1123,9 @@ void regcalcium() {
 
 		ShellExecute(0, "runas", MainTain.c_str(), 0, 0, SW_SHOW);
 
-		createlink(getselfinfo(), linkfile, "", "Calcium Program");
+		string CASHELCore = getselfpath() + "\\CaShell.exe";
+
+		createlink(CASHELCore, linkfile, "", "Calcium Program Shell");
 		mdfolder(PGDataf);
 		writeini(PGINSDATA, "Install", "Path", getselfpath());
 

@@ -39,13 +39,13 @@ int main(int argc, char* argv[]) {
 				return 0;
 			}
 		}
-		parametersA = parametersA + argv[ReadLN] + " ";
-		string msbox = "New LocalNum _" + to_string(ReadLN) + "_ CURRENTMAX = _" + to_string(argc) + "_";
+		parametersA = parametersA + "\"" + argv[ReadLN] + "\" ";
+		//string msbox = "New LocalNum _" + to_string(ReadLN) + "_ CURRENTMAX = _" + to_string(argc) + "_";
 		//MessageBox(0, msbox.c_str(), "COmplete Read", MB_OK);
 
 		//MessageBox(0, "Auto Config", parametersA.c_str(), MB_OK);
 
-		msbox = "After LocalNum _" + to_string(ReadLN) + "_ CURRENTMAX = _" + to_string(argc) + "_";
+		//msbox = "After LocalNum _" + to_string(ReadLN) + "_ CURRENTMAX = _" + to_string(argc) + "_";
 		//MessageBox(0, msbox.c_str(), "COmplete Read", MB_OK);
 		ReadLN++;
 		//MessageBox(0, "Complete Add", to_string(ReadLN).c_str(), MB_OK);

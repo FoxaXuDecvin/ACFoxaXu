@@ -22,7 +22,7 @@ int packloader(string packfile, string carun, string TCAPT) {
 	//start
 	if (_access(packfile.c_str(), 0)) {
 		lntype("lang.calcium.packageNULL");
-		return 0;
+		return 1;
 	}
 	// Ready
 	//Ω‚—π7z
@@ -33,7 +33,7 @@ int packloader(string packfile, string carun, string TCAPT) {
 	string CaptINI = TCAPT + "\\capt.ini";
 	if (_access(CaptINI.c_str(), 0)) {
 		lntype("lang.calcium.packageINIfailed");
-		return 0;
+		return 1;
 	}
 
 	SetCurrentDirectory(TCAPT.c_str());
@@ -46,7 +46,7 @@ int packloader(string packfile, string carun, string TCAPT) {
 		// SAT
 		if (_access(readini(CaptINI, "pubvar", "default").c_str(), 0)) {
 			lntype("lang.calcium.packageDefaultLoadFailed");
-			return 0;
+			return 1;
 		}
 
 		ofstream RootLockS;
@@ -57,18 +57,18 @@ int packloader(string packfile, string carun, string TCAPT) {
 		int errlevel = ScriptRun(readini(CaptINI, "pubvar", "default").c_str(), vercode, 3, 1, Nsafemark);
 		if (errlevel == 1) {
 			lntype("lang.calcium.packageException");
-			return 0;
+			return 1;
 		}
 		cout << endl;
 		SetCurrentDirectory(PATH.c_str());
 
-		return 1;
+		return 0;
 		// END
 	}
 
 	if (_access(carun.c_str(), 0)) {
 		cout << Outlang("lang.calcium.packageCARunError") << carun << endl;
-		return 0;
+		return 1;
 	}
 
 	ofstream RootLockS;
@@ -79,13 +79,13 @@ int packloader(string packfile, string carun, string TCAPT) {
 	int errlevel = ScriptRun(carun, vercode, 3, 1, Nsafemark);
 	if (errlevel == 1) {
 		lntype("lang.calcium.packageException");
-		return 0;
+		return 1;
 	}
 
 	cout << endl;
 	SetCurrentDirectory(PATH.c_str());
 
-	return 1;
+	return 0;
 }
 
 void listhelp() {
@@ -118,6 +118,7 @@ void StartRunMode() {
 	if (LoadMode == 1) {
 		if (LoadFile == "NUL") {
 			lntype("lang.calcium.DefaultRun");
+			cpause(Outlang("lang.public.PAK"));
 			return;
 		}
 		mdfolder(TempCAPT);
@@ -138,6 +139,7 @@ void StartRunMode() {
 		if (backdt == 1) {
 			cout << "------------------------------------------------------------" << endl;
 			lntype("lang.calcium.packageException");
+			cout << "Script Mode" << endl;
 			cpause(Outlang("lang.public.PAK"));
 			return;
 		}
@@ -147,15 +149,18 @@ void StartRunMode() {
 	if (LoadMode == 2) {
 		if (LoadFile == "NUL") {
 			lntype("lang.calcium.DefaultRun");
+			cpause(Outlang("lang.public.PAK"));
 			return;
 		}
 		int backdt = packloader(LoadFile, "#default", TempCAPT);
 		if (backdt == 1) {
 			cout << "------------------------------------------------------------" << endl;
 			lntype("lang.calcium.packageException");
+			cout << "Package Mode" << endl;
 			cpause(Outlang("lang.public.PAK"));
 			return;
 		}
+		return;
 	}
 
 	listhelp();
