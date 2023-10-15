@@ -10,8 +10,10 @@ RELOAD:
 		lntype("lang.public.unrelease");
 		cout << "-------------------------------------------------------------------" << endl;
 	}
-	cout << "----------------------------------------------------------------------" << endl;
-	pulltitle();
+	if (readini(settings, "Settings", "PullTitle") == "open") {
+		cout << "----------------------------------------------------------------------" << endl;
+		pulltitle();
+	}
 	cout << "----------------------------------------------------------------------" << endl;
 	lntype("lang.shell.welcome");
 	cout << Outlang("lang.shell.ver") << " :  " << Version << "~" << vercode << endl;

@@ -108,7 +108,7 @@ string installAutoBlock(string ProgramRoot) {
 	mdfolder(PGDataf);
 	writeini(PGINSDATA, "Install", "Path", ProgramRoot);
 
-	string newuninst = preroot + "\\Setup~Calcium.exe";
+	string newuninst = preroot + "\\Manager~Calcium.exe";
 
 	CopyFile(GetSelfD.c_str(), newuninst.c_str(), 0);
 	cout << "Install Complete" << endl;
