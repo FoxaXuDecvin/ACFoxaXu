@@ -4,6 +4,7 @@ using namespace std;
 
 //Default Delete Folder
 string Temp = getwinenvfast("temp");
+string MTLogFile = Temp + "\\CalciumMaintainLogs.log";
 string TempPKG = getwinenvfast("temp") + "\\CalciumPackage";
 string TempUPD = Temp + "\\UpdateCalcium.exe";
 
@@ -63,6 +64,7 @@ BackReadDLLV:
 }
 
 int main(int argc, char* argv[]) {
+
 	//Anti Run Much
 	//CheckConfig
 
@@ -76,6 +78,10 @@ int main(int argc, char* argv[]) {
 	string sessionlock = systemp + "\\MarkCaUpdate.lock";
 
 	if (argc == 1) {
+		ofstream MTLogs;
+		MTLogs.open(MTLogFile);
+		MTLogs << "Start Record Main Tain Logs" << endl;
+		MTLogs << "Mode A" << endl;
 		if (_access(sessionlock.c_str(), 0)) {}
 		else {
 			remove(sessionlock.c_str());
@@ -90,6 +96,7 @@ int main(int argc, char* argv[]) {
 		ofstream SessionLockOpen;
 		SessionLockOpen.open(sessionlock);
 		SessionLockOpen << "Hello World" << endl;
+		MTLogs << "File is Lock on :  " << sessionlock << endl;
 
 		//Maintain Part
 		Sleep(2000);
@@ -102,11 +109,15 @@ int main(int argc, char* argv[]) {
 		remove(CaPTFile.c_str());
 		UpdateDLL();
 
+		MTLogs << "Main Tain OK" << endl;
+
 		//Auto Update Services
 		if (_access(PGINSDATA.c_str(), 0)) {
 			MessageBox(0, Outlang("lang.update.failpath").c_str(), PGINSDATA.c_str(), MB_ICONERROR | MB_OK);
 			return 0;
 		}
+
+		MTLogs << "Start Update Check" << endl;
 
 		string curfolder = readini(PGINSDATA, "Install", "Path");
 		if (existfolderA(curfolder,"Calcium.exe")) {
@@ -114,6 +125,7 @@ int main(int argc, char* argv[]) {
 			string CURVerPart = readini(".\\config.ini", "Version", "CURRENT");
 			string WebURL = readini(".\\config.ini", "Version", "API");
 		ReCheckUpdate:
+			MTLogs << "ReCheck Update" << endl;
 			string NewVersion = geturlcode(WebURL);
 
 			if (CURVerPart == NewVersion) {
@@ -121,6 +133,8 @@ int main(int argc, char* argv[]) {
 					//Only Check Once a Update On StartUp
 					return 0;
 				}
+				MTLogs << "No Any Update." << endl;
+				MTLogs << "Start To Sleep :  _" << readini(CONFIGROOT, "Version", "UpdateSleep") << "_" << endl;
 				Sleep(atoi(readini(CONFIGROOT, "Version", "UpdateSleep").c_str()));
 				goto ReCheckUpdate;
 			}
@@ -129,17 +143,25 @@ int main(int argc, char* argv[]) {
 					//Only Check Once a Update On StartUp
 					return 0;
 				}
+				MTLogs << "Failed Update. Return GetURLFailed" << endl;
+				MTLogs << "Start To Sleep :  _" << readini(CONFIGROOT, "Version", "UpdateSleep") << "_" << endl;
 				Sleep(atoi(readini(CONFIGROOT, "Version", "UpdateSleep").c_str()));
 				goto ReCheckUpdate;
 			}
 
 			//Find New Version
-			
+
 			string BlockVer = LineReader(BLOCKMARKJ, 1);
 			if (BlockVer == NewVersion) {
+				MTLogs << "Version _" << NewVersion << "_. is Block" << endl;
+				MTLogs << "Start To Sleep :  _" << readini(CONFIGROOT, "Version", "UpdateSleep") << "_" << endl;
 				Sleep(atoi(readini(CONFIGROOT, "Version", "UpdateSleep").c_str()));
 				goto ReCheckUpdate;
 			}
+
+			MTLogs << "New Version :  " << NewVersion << endl;
+
+			MTLogs.close();
 
 			int SelectNVGiveUp = MessageBox(0, Outlang("lang.update.nutrueorfalse").c_str(), "It`s Time to Update", MB_ICONWARNING | MB_YESNO);
 			if (SelectNVGiveUp == 6) {}
@@ -151,7 +173,7 @@ int main(int argc, char* argv[]) {
 			}
 
 			//Auto Update
-			if (bool a = testAdmin(admincheckpath)) {}
+			if (bool a = testAdminA()) {}
 			else {
 				ShellExecute(0, "runas", getselfinfo().c_str(), 0, 0, SW_SHOW);
 				return 0;
@@ -172,7 +194,7 @@ int main(int argc, char* argv[]) {
 		int alang = 0;
 		alang++;
 		string rootfolderS = argv[alang];
-		if (bool a = testAdmin(rootfolderS)) {}
+		if (bool a = testAdminA()) {}
 		else {
 			MessageBox(0, Outlang("lang.public.Admin").c_str(), "Warning", MB_ICONERROR | MB_OK);
 			return 0;

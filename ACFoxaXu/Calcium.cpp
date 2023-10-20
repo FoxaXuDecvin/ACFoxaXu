@@ -179,11 +179,7 @@ int main(int argc, char* argv[]) {
 
 BackGetCommand:
 	//cout << "RLN : _" << to_string(ReadLN) << "_.  argc :  _" << to_string(argc) << "_" << endl;
-	if (ReadLN == argc) {
-		StartRunMode();
-		return 0;
-	}
-	if (ReadLN > argc) {
+	if (ReadLN >= argc) {
 		StartRunMode();
 		return 0;
 	}

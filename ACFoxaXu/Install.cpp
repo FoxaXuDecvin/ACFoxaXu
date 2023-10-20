@@ -11,7 +11,27 @@ string GetSelfD = getselfinfo();
 
 string uninstallBLOCK() {
 	//Uninstall
+	SetCurrentDirectory(getenv("temp"));
+
+	string MGRCore = preroot + "\\Manager~Calcium.exe";
+
+	if (_access(MGRCore.c_str(), 0)) {}
+	else {
+		if (MGRCore == getselfinfo()) {
+			goto SKIPCHECKMGR;
+		}
+		cout << "Your Calcium Version seems not support this install tool version," << endl;
+		cout << "We will use your source install tool to uninstall" << endl;
+		ShellExecute(0, "runas", MGRCore.c_str(), "--uninst-auto", 0, SW_SHOW);
+		while (existcheckB(MGRCore) == 1) {
+			remove(MGRCore.c_str());
+			Sleep(1000);
+		}
+		return "OK";
+	}
 	
+	SKIPCHECKMGR:
+
 	Sleep(1000);
 	remove(linkfile.c_str());
 		if (_access(PGINSDATA.c_str(), 0)) {
@@ -117,7 +137,7 @@ string installAutoBlock(string ProgramRoot) {
 }
 
 int main(int argc,char* argv[]) {
-	if (bool a = testAdmin("C:")) {}
+	if (bool a = testAdminA()) {}
 	else {
 		if (argc == 2) {
 			int alang = 0;
@@ -171,8 +191,11 @@ int main(int argc,char* argv[]) {
 
 		//Uninstall
 		if (existfolder(PGDataf)) {
+			//Anti Check Old Version Uninstall Un Clean
+
 			string current = readini(PGINSDATA, "Install", "Path");
 			LANGID CURRPC = GetUserDefaultUILanguage();
+
 			switch (CURRPC)
 			{
 			case 0x0804:

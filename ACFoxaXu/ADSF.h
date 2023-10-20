@@ -37,9 +37,6 @@ string DLLPATH = StrTrans(readini(CONFIGROOT, "default", "DLLPATH"));
 string DLLRECORD = DLLPATH + "\\DllRecord.txt";
 
 string settings = DLLPATH + "\\ProgramConfig.ini";
-
-string admincheckpath = StrTrans(readini(settings, "Settings", "AdminCheckPath"));
-
 string verinfor = readini(CONFIGROOT, "Version", "CURRENT");
 int vercode = atoi(verinfor.c_str());
 string Version = readini(CONFIGROOT,"Version","CodeName");
@@ -175,57 +172,26 @@ string CleanAuto(string info, string replaceword) {
 
 string TransVar(string Info) {
 	string backinfo = Info;
-	
+
 	if (VarSpaceMax == 0) {
 		return backinfo;
 	}
 
-	int readpoint = 1;
-	int startReadVar = 2;
-	string VarHead;
-	string readvar;
-	
-	string varhead;
-	string varset;
+	string getfullLine,ResChar,ReplaceChar;
 
-BackTransLate:
-	//%var Mark Reader
-	VarHead = ";";
-	//cout << "readvar Head :  " << VarSpace << ".  " << VarHead << "_  " << to_string(startReadVar) << "_." << endl;
-	readvar = cutlineblockA(VarSpace, VarHead, startReadVar);
-	//cout << "readvar : " << readvar << endl;
-	readvar = CleanAuto(readvar, ";");
-	//cout << "readvar After Clean : " << readvar << endl;
+	for (int startrollmax = 0, readmark = 2; startrollmax < VarSpaceMax; startrollmax++, readmark++) {
+		getfullLine = cutlineblockA(VarSpace, ";", readmark);
+		ResChar = cutlineblockA(getfullLine, "=", 1);
+		ReplaceChar = cutlineblockA(getfullLine, "=", 2);
+		ReplaceChar = Replace(ReplaceChar, "%sbar%", " ");
+		ReplaceChar = Replace(ReplaceChar, "%selbar%", ";");
+		ReplaceChar = Replace(ReplaceChar, "%eqbar%", "=");
+		ReplaceChar = Replace(ReplaceChar, "%mnbar%", "$");
 
-	//Get XX = NN
-
-	varhead = cutlineblockA(readvar, "=", 1);
-	//cout << "Varhead : _" << varhead << "_" << endl;
-	varset = cutlineblockA(readvar, "=", 2);
-	//cout << "VarSet : _" << varset << "_" << endl;
-	//cout << "Current VarSpace :  _" << VarSpace << "_" << endl;
-	backinfo = Replace(backinfo, "%sbar%", " ");
-	backinfo = Replace(backinfo, "%selbar%", ";");
-	backinfo = Replace(backinfo, "%eqbar%", "=");
-	backinfo = Replace(backinfo, "%mnbar%", "$");
-	//cout << "VarSet : _" << backinfo << "_  _" << varhead << "_   _" << varset << "_" << endl;
-	backinfo = Replace(backinfo, varhead, varset);
-
-	//cout << "BackInfo :  _" << backinfo << "_" << endl;
-	//cout << "If Command :  _" << to_string(readpoint) << "_   VarSpaceMax :  _" << to_string(VarSpaceMax) << "_" << endl;
-	if (readpoint == VarSpaceMax) {
-		//cout << "BackData :  _" << backinfo << "_" << endl;
-		//cout << "-----------------------------------------------------------------" << endl;
-		backinfo = Replace(backinfo, "%sbar%", " ");
-		backinfo = Replace(backinfo, "%selbar%", ";");
-		backinfo = Replace(backinfo, "%eqbar%", "=");
-		backinfo = Replace(backinfo, "%mnbar%", "$");
-		return backinfo;
+		backinfo = Replace(backinfo, ResChar, ReplaceChar);
 	}
-	readpoint++;
-	startReadVar++;
-	goto BackTransLate;
 
+	return backinfo;
 }
 
 void varspaceadd(string VarHead, string varinfo) {
@@ -542,10 +508,10 @@ int DLLUpdate(string DLLNAMEX) {
 // 2 CrashScript
 // >2 Skip Goto
 int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode) {
-	
+
 	string ReadCMD = cutlineblockA(CaCMDS, " ", 1);
-	string ReadSource = cutlineblockA(ResCMD, " ", 1);
-	ReadSource = CleanAuto(ReadSource, " ");
+	string ReadSourceX = cutlineblockA(ResCMD, " ", 1);
+	string ReadSource = CleanAuto(ReadSourceX, " ");
 	if (ReadCMD == "") {
 		return 0;
 	}
@@ -556,23 +522,24 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		ReadSource = ResCMD;
 		ReadCMD = ResCMD;
 	}
-	if (ReadSource == "new.var") {
-		ResCMD = CleanAuto(ResCMD, "new.var ");
-		ResCMD = CleanAuto(ResCMD, "new.var");
-		CaCMDS = CleanAuto(CaCMDS, "new.var ");
-		CaCMDS = CleanAuto(CaCMDS, "new.var");
+
+	if (ReadSource == "var") {
+		ResCMD = CleanAuto(ResCMD, "var ");
+		ResCMD = CleanAuto(ResCMD, "var");
+		CaCMDS = CleanAuto(CaCMDS, "var ");
+		CaCMDS = CleanAuto(CaCMDS, "var");
 
 		if (ResCMD == "") {
 			cout << ReadCMD <<" Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
-			cout << " COMMAND :     new.var <var> = <data>" << endl;
+			cout << " COMMAND :     var <var> = <data>" << endl;
 			WarningRecord++;
 			return 0;
 		}
 		if (checkChar(ResCMD, "=")==0) {
 			cout << ReadCMD << " Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
-			cout << " COMMAND :     new.var <var> = <data>" << endl;
+			cout << " COMMAND :     var <var> = <data>" << endl;
 			WarningRecord++;
 			return 0;
 		}
@@ -582,7 +549,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		if (ResCMD == "") {
 			cout << ReadCMD << " Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
-			cout << " COMMAND :     new.var <var> = <data>" << endl;
+			cout << " COMMAND :     var <var> = <data>" << endl;
 			WarningRecord++;
 			return 0;
 		}
@@ -894,14 +861,36 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
 		if (CaCMDS == "") {
 			cout << ReadCMD << " Command:  " << endl;
-			cout << " COMMAND :     cout <Message>" << endl;
+			cout << " COMMAND :     cout \"<Message>\"" << endl;
 			WarningRecord++;
 			return 0;
 		}
-		if (CaCMDS == "%nextline%") {
+		if (CaCMDS == "%n") {
 			cout << endl;
 			return 0;
 		}
+		int maxCSize = CaCMDS.size();
+		string readMCS,tempCaCMDS;
+		int currentFit;
+
+		cout << "Max C Size :  _" << maxCSize << endl;
+		for (currentFit = 0; currentFit < maxCSize; currentFit++) {
+			readMCS = CaCMDS[currentFit];
+			cout << "Read MCS :  _" << readMCS << endl;
+			if (readMCS == " ") {}
+			else {
+				while (currentFit < maxCSize) {
+					cout << "Trans Add : _" << CaCMDS[currentFit] << endl;
+					tempCaCMDS = tempCaCMDS + CaCMDS[currentFit];
+					currentFit++;
+				}
+			}
+		}
+		cout << "End CURR :  _" << currentFit << endl;
+		cout << "tempCaCMDS :  _" << tempCaCMDS << endl;
+
+		CaCMDS = tempCaCMDS;
+
 		cout << CaCMDS << endl;
 		return 0;
 	}
@@ -952,7 +941,7 @@ void CaRootLoaderX() {
 
 //rootlockmode 1-open 0-off
 //Return Num :  1=Exception 0=Normal
-int ScriptRun(string File, int vercode, int startline, int rootlockmode,string unsafelock) {
+int ScriptRun(string File, int vercode, int startline, int rootlockmode, string unsafelock) {
 	int readline = startline;
 	string ReadPoint;
 	string AfterTranslate;
@@ -990,8 +979,7 @@ RollBackScript:
 	}
 	if (Tercmd == "#onlyadmin") {
 		//cout << "Check Administrator" << endl;
-		bool TestOAV = testAdmin(readini(settings, "Settings", "AdminCheckPath"));
-		if (TestOAV) {
+		if (testAdminA() == 1) {
 			cout << "Run On Administrator" << endl;
 			readline++;
 			goto RollBackScript;
@@ -1014,9 +1002,9 @@ RollBackScript:
 	//cout << "No TerCMD" << endl;
 
 	if (rootlockmode == 1) {
-		writeini(unsafelock, "Run", "Command",ReadPoint);
+		writeini(unsafelock, "Run", "Command", ReadPoint);
 		writeini(unsafelock, "Run", "Script", File);
-		writeini(unsafelock, "Run", "Line",to_string(readline));
+		writeini(unsafelock, "Run", "Line", to_string(readline));
 		writeini(unsafelock, "Run", "FullVersion", Version + "~" + to_string(vercode));
 		writeini(unsafelock, "Run", "VarSpace", VarSpace);
 		writeini(unsafelock, "Run", "DllregList", DLLRegList);
@@ -1070,12 +1058,11 @@ RollBackScript:
 		goto RollBackScript;
 	}
 
-	remove(unsafelock.c_str());
 	readline++;
 	goto RollBackScript;
 }
 
-string linkfile = getwinenvfast("public") + "\\Desktop\\CalciumScript Shell.lnk";
+string linkfile = getwinenvfast("public") + "\\Desktop\\Calcium Script Shell.lnk";
 string COREFILE = getselfinfo();
 
 void regcalcium() {

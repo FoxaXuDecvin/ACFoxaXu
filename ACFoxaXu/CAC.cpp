@@ -3,10 +3,23 @@ using namespace std;
 
 #pragma comment( linker, "/subsystem:\"windows\" /entry:\"mainCRTStartup\"" ) // 设置入口地址
 
+string rootfolder;
+string basicpathcore = getselfpath() + "\\Calcium.exe";
+int skipPrep = 0;
+
 int main(int argc, char* argv[]) {
 	//Auto Find Root
-	if (existfolder) {
-		string rootfolder = readini(PGINSDATA, "Install", "Path");
+	rootfolder = PGDataf;
+	if (_access(basicpathcore.c_str(), 0)) {}
+	else {
+		rootfolder = getselfpath();
+		skipPrep = 1;
+	}
+	BackRunCacLocal:
+	if (existfolder(rootfolder)) {
+		if (skipPrep == 0) {
+			rootfolder = readini(PGINSDATA, "Install", "Path");
+		}
 		SetCurrentDirectory(rootfolder.c_str());
 
 		string maincore = rootfolder + "\\Calcium.exe";
