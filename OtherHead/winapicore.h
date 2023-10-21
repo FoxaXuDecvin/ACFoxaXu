@@ -489,7 +489,7 @@ string ALineReader(string File, int line_number) {
 	}
 	if (file.fail())
 	{
-		return "Error File not exist";
+		return "notexist";
 	}
 	if (line_number > lines)
 	{
@@ -850,4 +850,33 @@ int existcheckB(string file) {
 	else {
 		return 1;
 	}
+}
+
+string getrunpath(void) {
+	char tmp[512];
+	_getcwd(tmp, 512);
+	return tmp;
+}
+
+string CutFilePath(string Info) {
+	int maxszinfo = Info.size();
+	string ReadChar;
+
+	int EndChar = 0;
+
+	Info = Replace(Info, "\\\\", "\\");
+
+	for (int mxread = maxszinfo; ReadChar != "\\"; mxread--) {
+		ReadChar = Info[mxread];
+		EndChar = mxread;
+	}
+
+	int CurrRead = 0;
+	string tempInfo;
+	while (EndChar >= CurrRead) {
+		tempInfo = tempInfo + Info[CurrRead];
+		CurrRead++;
+	}
+
+	return tempInfo;
 }
