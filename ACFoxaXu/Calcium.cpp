@@ -8,6 +8,7 @@ string PATH = getselfpath();
 
 string VCNum = to_string(vercode);
 string ConfigINI = PATH + "\\config.ini";
+string TempCaPKG = getwinenvfast("temp") + "\\CalciumPackage";
 string TempCAPT = getwinenvfast("temp") + "\\CalciumPackage\\" + to_string(SpawnRandomNum(11111111,99999999));
 
 //LaunchData
@@ -172,6 +173,7 @@ void StartRunMode() {
 }
 
 int main(int argc, char* argv[]) {
+	mdfolder(TempCaPKG);
 	int ReadLN = 0;
 	int Effcode;
 

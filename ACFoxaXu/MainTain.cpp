@@ -186,7 +186,7 @@ int main(int argc, char* argv[]) {
 
 			MTLogs.close();
 
-			string CharNoticeUpd = "It`s Time to Update.  New Version :  _" + NewVersion + "_ is Release Now.  Your Ver:  _"+ CURVerPart + "_";
+			string CharNoticeUpd = "It`s Time to Update.  New Version :  _" + NewVersion + "_ is Release Now";
 			int SelectNVGiveUp = MessageBox(0, Outlang("lang.update.nutrueorfalse").c_str(), CharNoticeUpd.c_str(), MB_ICONWARNING | MB_YESNO);
 			if (SelectNVGiveUp == 6) {}
 			else {
