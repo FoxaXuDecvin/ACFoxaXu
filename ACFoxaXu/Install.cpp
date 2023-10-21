@@ -95,7 +95,7 @@ string installAutoBlock(string ProgramRoot) {
 		mdfolder(TempF);
 
 		cout << "Download Package" << endl;
-		URLDown("https://gitcode.net/FoxaXu1/fxtoolcds/-/raw/master/Install.zip", TempF + "\\ins.zip");
+		URLDown("https://gitcode.net/FoxaXu1/fxtoolcds/-/raw/master/Install64.zip", TempF + "\\ins.zip");
 		URLDown("https://gitcode.net/FoxaXu1/download/-/raw/master/7z/7z.dll", TempF + "\\7z.dll");
 		URLDown("https://gitcode.net/FoxaXu1/download/-/raw/master/7z/7z.exe", TempF + "\\7z.exe");
 
