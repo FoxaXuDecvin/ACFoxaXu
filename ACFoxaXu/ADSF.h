@@ -949,6 +949,7 @@ RollBackScript:
 	if (ReadPoint == "overline") {
 		cout << endl;
 		cout << "[ WARNING ]   Please add \"end\" on Script" << endl;
+		ErrorRecord++;
 		return 1;
 	}
 

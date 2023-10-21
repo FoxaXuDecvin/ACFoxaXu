@@ -128,7 +128,6 @@ void StartRunMode() {
 		
 		string NRootLock = TempCAPT + "\\session.lock";
 		string Nsafemark = TempCAPT + "\\unsafe.lock";
-		SetCurrentDirectory(TempCAPT.c_str());
 
 		ofstream RootLockS;
 		RootLockS.open(NRootLock);

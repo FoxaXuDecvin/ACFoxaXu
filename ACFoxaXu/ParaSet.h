@@ -14,3 +14,5 @@ string $PCUserName = getenv("username");
 string $PCPATH = getenv("path");
 string $PCTemp = getenv("temp");
 string $PCSYSDRV = getenv("systemdrive");
+
+string $ScriptPath;
