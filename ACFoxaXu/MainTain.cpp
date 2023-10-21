@@ -122,40 +122,63 @@ int main(int argc, char* argv[]) {
 		string curfolder = readini(PGINSDATA, "Install", "Path");
 		if (existfolderA(curfolder,"Calcium.exe")) {
 			SetCurrentDirectory(curfolder.c_str());
-			string CURVerPart = readini(".\\config.ini", "Version", "CURRENT");
-			string WebURL = readini(".\\config.ini", "Version", "API");
+			string CURVerPart = readini(CONFIGROOT, "Version", "CURRENT");
+			MTLogs << "Current Version :  _" << CURVerPart << "_" << endl;
+			string WebURL = readini(CONFIGROOT, "Version", "API");
+			int TotalCheckUpdate = 0;
+			string NewVersion,BlockVer;
+
+			MTLogs << "Current Config :  _" << CONFIGROOT << "_" << endl;
+
+			string SleepTimeStr = readini(CONFIGROOT, "Version", "UpdateSleep");
+			int SleepTime = atoi(SleepTimeStr.c_str());
+			MTLogs << "Start Record Update..." << endl;
+			
+			if (getselfpath() != curfolder) {
+				MessageBox(0, Outlang("lang.update.otherver").c_str(), "NOT ALLOW", MB_ICONERROR | MB_OK);
+				return 0;
+			}
+
 		ReCheckUpdate:
-			MTLogs << "ReCheck Update" << endl;
-			string NewVersion = geturlcode(WebURL);
+			TotalCheckUpdate++;
+			MTLogs << "----------------------------------------------------------------------------" << endl;
+			MTLogs << "ReCheck Update. Number :   _" << to_string(TotalCheckUpdate) << "_" << endl;
+			NewVersion = geturlcode(WebURL);
+			MTLogs << "Server Return Version :  _" << NewVersion << "_" << endl;
+			MTLogs << "Update Server :  _" << WebURL << "_" << endl;
 
 			if (CURVerPart == NewVersion) {
-				if (atoi(readini(".\\config.ini", "Version", "UpdateSleep").c_str()) == -1) {
+				MTLogs << "No Any Update." << endl;
+				MTLogs << "Start To Sleep :  _" << SleepTimeStr << "_" << endl;
+				if (SleepTime == -1) {
 					//Only Check Once a Update On StartUp
 					return 0;
 				}
-				MTLogs << "No Any Update." << endl;
-				MTLogs << "Start To Sleep :  _" << readini(CONFIGROOT, "Version", "UpdateSleep") << "_" << endl;
-				Sleep(atoi(readini(CONFIGROOT, "Version", "UpdateSleep").c_str()));
+				Sleep(SleepTime);
 				goto ReCheckUpdate;
 			}
 			if (NewVersion == "geturlfailed") {
-				if (atoi(readini(".\\config.ini", "Version", "UpdateSleep").c_str()) == -1) {
+				MTLogs << "Failed Update. Return GetURLFailed" << endl;
+				MTLogs << "Start To Sleep :  _" << SleepTimeStr << "_" << endl;
+				if (SleepTime == -1) {
 					//Only Check Once a Update On StartUp
 					return 0;
 				}
-				MTLogs << "Failed Update. Return GetURLFailed" << endl;
-				MTLogs << "Start To Sleep :  _" << readini(CONFIGROOT, "Version", "UpdateSleep") << "_" << endl;
-				Sleep(atoi(readini(CONFIGROOT, "Version", "UpdateSleep").c_str()));
+				Sleep(SleepTime);
 				goto ReCheckUpdate;
 			}
 
 			//Find New Version
 
-			string BlockVer = LineReader(BLOCKMARKJ, 1);
+			BlockVer = LineReader(BLOCKMARKJ, 1);
 			if (BlockVer == NewVersion) {
 				MTLogs << "Version _" << NewVersion << "_. is Block" << endl;
-				MTLogs << "Start To Sleep :  _" << readini(CONFIGROOT, "Version", "UpdateSleep") << "_" << endl;
-				Sleep(atoi(readini(CONFIGROOT, "Version", "UpdateSleep").c_str()));
+				MTLogs << "Start To Sleep :  _" << SleepTimeStr << "_" << endl;
+				if (SleepTime == -1) {
+					//Only Check Once a Update On StartUp
+					return 0;
+				}
+				Sleep(SleepTime);
 				goto ReCheckUpdate;
 			}
 
@@ -163,7 +186,8 @@ int main(int argc, char* argv[]) {
 
 			MTLogs.close();
 
-			int SelectNVGiveUp = MessageBox(0, Outlang("lang.update.nutrueorfalse").c_str(), "It`s Time to Update", MB_ICONWARNING | MB_YESNO);
+			string CharNoticeUpd = "It`s Time to Update.  New Version :  _" + NewVersion + "_ is Release Now.  Your Ver:  _"+ CURVerPart + "_";
+			int SelectNVGiveUp = MessageBox(0, Outlang("lang.update.nutrueorfalse").c_str(), CharNoticeUpd.c_str(), MB_ICONWARNING | MB_YESNO);
 			if (SelectNVGiveUp == 6) {}
 			else {
 				cmarkfile(BLOCKMARKJ, NewVersion);
@@ -173,7 +197,7 @@ int main(int argc, char* argv[]) {
 			}
 
 			//Auto Update
-			if (bool a = testAdminA()) {}
+			if (testAdminA()==1) {}
 			else {
 				ShellExecute(0, "runas", getselfinfo().c_str(), 0, 0, SW_SHOW);
 				return 0;
@@ -182,7 +206,6 @@ int main(int argc, char* argv[]) {
 			UpdateBLOCK(curfolder,0);
 
 			return 0;
-
 		}
 		else {
 			MessageBox(0,Outlang("lang.update.failinstdata").c_str(), curfolder.c_str(), MB_ICONERROR | MB_OK);

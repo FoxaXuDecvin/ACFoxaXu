@@ -79,6 +79,28 @@ string VarTrans(string VarSelect) {
 	return VarSelect;
 }
 
+string HeadSpaceClean(string Info) {
+	int maxCSize = Info.size();
+	string readMCS, tempInfo;
+	int currentFit;
+
+	//cout << "Max C Size :  _" << maxCSize << endl;
+	for (currentFit = 0; currentFit < maxCSize; currentFit++) {
+		readMCS = Info[currentFit];
+		//cout << "Read MCS :  _" << readMCS << endl;
+		if (readMCS == " ") {}
+		else {
+			while (currentFit < maxCSize) {
+				//cout << "Trans Add : _" << Info[currentFit] << endl;
+				tempInfo = tempInfo + Info[currentFit];
+				currentFit++;
+			}
+		}
+	}
+	return tempInfo;
+}
+
+
 void pulltitle() {
 	if (InsidePreview == 1) {
 		cout << "Pull Title is Disabled by DebugMode" << endl;
@@ -714,7 +736,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		}
 
 		//查找 p1
-		int XCURRLINE = 2;
+		int XCURRLINE = 3;
 
 	ASBackRoll:
 		//获取函数
@@ -738,35 +760,6 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		XCURRLINE++;
 		goto ASBackRoll;
 	}
-	if (ReadCMD == "msgbox.var") {
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
-		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
-		CaCMDS = CleanAuto(CaCMDS, "msgbox.var ");
-		CaCMDS = CleanAuto(CaCMDS, "msgbox.var");
-		CaCMDS = CleanAuto(CaCMDS, "anticrashHEAD");
-		if (CaCMDS == "") {
-			cout << ReadCMD << " Command:  " << endl;
-			cout << " COMMAND :     msgbox.var <var> = <Title>|<Info>" << endl;
-			WarningRecord++;
-			return 0;
-		}
-		string VARS = cutlineblockA(CaCMDS, "=", 1);
-
-		string MsgTag = cutlineblockA(CaCMDS, "=", 2);
-
-		string mgtitle = cutlineblockA(MsgTag, "|", 1);
-		string mginfo = cutlineblockA(MsgTag, "|", 2);
-
-		int MGBack = MessageBox(0, mginfo.c_str(), mgtitle.c_str(), MB_ICONWARNING | MB_YESNO);
-		if (MGBack == 6) {
-			varspaceadd(VARS, "YES");
-			return 0;
-		}
-		else {
-			varspaceadd(VARS, "NO");
-			return 0;
-		}
-	}
 	if (ReadCMD == "pause") {
 		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
 		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
@@ -789,12 +782,20 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			WarningRecord++;
 			return 0;
 		}
+		CaCMDS = HeadSpaceClean(CaCMDS);
+		CaCMDS = cutlineblockA(CaCMDS, "\"", 1);
+		if (CaCMDS == "NUL") {
+			cout << "Null Type. Add \" in Message Head." << endl;
+			WarningRecord++;
+			return 0;
+		}
 		system(CaCMDS.c_str());
 		return 0;
 	}
 	if (ReadCMD == "list") {
 		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
 		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
+		CaCMDS = HeadSpaceClean(CaCMDS);
 		if (CaCMDS == "") {
 			cout << ReadCMD << " Command:  " << endl;
 			cout << "Please select you want list" << endl;
@@ -869,27 +870,14 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << endl;
 			return 0;
 		}
-		int maxCSize = CaCMDS.size();
-		string readMCS,tempCaCMDS;
-		int currentFit;
-
-		cout << "Max C Size :  _" << maxCSize << endl;
-		for (currentFit = 0; currentFit < maxCSize; currentFit++) {
-			readMCS = CaCMDS[currentFit];
-			cout << "Read MCS :  _" << readMCS << endl;
-			if (readMCS == " ") {}
-			else {
-				while (currentFit < maxCSize) {
-					cout << "Trans Add : _" << CaCMDS[currentFit] << endl;
-					tempCaCMDS = tempCaCMDS + CaCMDS[currentFit];
-					currentFit++;
-				}
-			}
+		
+		CaCMDS = HeadSpaceClean(CaCMDS);
+		CaCMDS = cutlineblockA(CaCMDS, "\"", 1);
+		if (CaCMDS == "NUL") {
+			cout << "Null Type. Add \" in Message Head." << endl;
+			WarningRecord++;
+			return 0;
 		}
-		cout << "End CURR :  _" << currentFit << endl;
-		cout << "tempCaCMDS :  _" << tempCaCMDS << endl;
-
-		CaCMDS = tempCaCMDS;
 
 		cout << CaCMDS << endl;
 		return 0;
