@@ -853,6 +853,11 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			RPTotal++;
 			goto BackReadDLLV;
 		}
+		if (CaCMDS == "path") {
+			string GetPath = getrunpath();
+			cout << "Current Path :  " << GetPath << endl;
+			return 0;
+		}
 		ErrorRecord++;
 		cout << "Unknown List :  _" << CaCMDS << "_" << endl;
 		return 1;
@@ -886,7 +891,25 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		system("cls");
 		return 0;
 	}
-
+	if (ReadCMD == "setpath") {
+		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
+		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
+		if (CaCMDS == "") {
+			cout << ReadCMD << " Command:  " << endl;
+			cout << " COMMAND :    setpath <PATH>" << endl;
+			WarningRecord++;
+			return 0;
+		}
+		CaCMDS = HeadSpaceClean(CaCMDS);
+		CaCMDS = cutlineblockA(CaCMDS, "\"", 1);
+		if (CaCMDS == "NUL") {
+			cout << "Null Type. Add \" in Message Head." << endl;
+			WarningRecord++;
+			return 0;
+		}
+		SetCurrentDirectory(CaCMDS.c_str());
+		return 0;
+	}
 	//Other
 	if (ReadSource == "update.dll") {
 		CaCMDS = CleanAuto(CaCMDS, "update.dll ");
@@ -930,14 +953,26 @@ void CaRootLoaderX() {
 //rootlockmode 1-open 0-off
 //Return Num :  1=Exception 0=Normal
 int ScriptRun(string File, int vercode, int startline, int rootlockmode, string unsafelock) {
+	ReTryRollScript:
 	int readline = startline;
 	string ReadPoint;
 	string AfterTranslate;
 	string ErrCode;
 	string Tercmd;
+	string RunPathSet = CutFilePath(ResLoadFile);
+
+	SetCurrentDirectory(RunPathSet.c_str());
+	cout << "Set Local Path :  _" << RunPathSet << "_" << endl;
 
 RollBackScript:
 	ReadPoint = LineReader(File, readline);
+	if (ReadPoint == "ReadFailed") {
+		cout << "Calcium Run Script Error" << endl;
+		cout << "Path :  " << RunPathSet << endl;
+		cout << "Script File :  " << File << endl;
+		cpause(Outlang("lang.public.PAK"));
+		return 0;
+	}
 	if (ReadPoint == "") {
 		readline++;
 		goto RollBackScript;
@@ -1072,7 +1107,7 @@ void regcalcium() {
 		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\open\\command /ve /t REG_SZ /f /d \"Cac.exe -casp \\\"%1\\\"\"");
 		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\runas /f");
 
-		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\runas\\command /ve /t REG_SZ /f /d \"Cac.exe -casp\\\"%1\\\"\"");
+		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\runas\\command /ve /t REG_SZ /f /d \"Cac.exe -casp \\\"%1\\\"\"");
 		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\edit /f");
 		system("reg add HKEY_CLASSES_ROOT\\CalciumScript\\shell\\edit\\command /ve /t REG_SZ /f /d \"Notepad.exe \\\"%1\\\"\"");
 
@@ -1153,3 +1188,4 @@ void unregcalcium() {
 	ShellExecute(0, "runas", COREFILE.c_str(), "-unreg", 0, SW_SHOW);
 	return;
 }
+

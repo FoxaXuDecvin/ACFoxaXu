@@ -2,7 +2,11 @@
 
 #include"ADSF.h"
 
+string UserProfileENV = getenv("userprofile");
+string RunPathSe = UserProfileENV + "\\Desktop";
+
 int main() {
+	SetCurrentDirectory(RunPathSe.c_str());
 RELOAD:
 	system("cls");
 	if (InsidePreview == 1) {
@@ -18,6 +22,7 @@ RELOAD:
 	lntype("lang.shell.welcome");
 	cout << Outlang("lang.shell.ver") << " :  " << Version << "~" << vercode << endl;
 	cout << Outlang("lang.shell.reltime") << " :  " << ComVer << endl;
+	cout << "Run Path :  " << RunPathSe << endl;
 	cout << "Copyright FoxaXu 2023" << endl;
 	lntype("lang.shell.usehelp");
 	lntype("lang.shell.endcmd");

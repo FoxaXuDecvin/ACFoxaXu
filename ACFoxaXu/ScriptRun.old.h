@@ -17,7 +17,7 @@ string LineReaderA(string File, int line_number) {
 	}
 	if (file.fail())
 	{
-		return "Error File not exist";
+		return "notexist";
 	}
 	if (line_number > lines)
 	{

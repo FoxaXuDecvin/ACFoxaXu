@@ -17,6 +17,7 @@ string parametersA = "";
 
 //0 Error, 1 Normal
 int packloader(string packfile, string carun, string TCAPT) {
+	ResLoadFile = packfile;
 	string NRootLock = TCAPT + "\\session.lock";
 	string Nsafemark = TCAPT + "\\unsafe.lock";
 	//start
@@ -54,7 +55,7 @@ int packloader(string packfile, string carun, string TCAPT) {
 		RootLockS << "Lock" << endl;
 
 		ShellExecute(0, "open", CaOutage.c_str(), TCAPT.c_str(), getselfpath().c_str(), SW_SHOW);
-		int errlevel = ScriptRun(readini(CaptINI, "pubvar", "default").c_str(), vercode, 3, 1, Nsafemark);
+		int errlevel = ScriptRun(TCAPT + "\\" + readini(CaptINI, "pubvar", "default").c_str(), vercode, 3, 1, Nsafemark);
 		if (errlevel == 1) {
 			lntype("lang.calcium.packageException");
 			return 1;
@@ -76,7 +77,7 @@ int packloader(string packfile, string carun, string TCAPT) {
 	RootLockS << "Lock" << endl;
 
 	ShellExecute(0, "open", CaOutage.c_str(), TCAPT.c_str(), getselfpath().c_str(), SW_SHOW);
-	int errlevel = ScriptRun(carun, vercode, 3, 1, Nsafemark);
+	int errlevel = ScriptRun(TCAPT + "\\" + carun, vercode, 3, 1, Nsafemark);
 	if (errlevel == 1) {
 		lntype("lang.calcium.packageException");
 		return 1;
@@ -105,8 +106,11 @@ void listhelp() {
 	cout << " Calcium Version " << endl;
 	cout << "                     Fulll Version _" << Version << "_.  Version Code :  _" << to_string(vercode) << "_." << endl;
 	cout << "Release Time :  _" << ComVer << "_" << endl;
-	cout << "InsidePreview :  _" << to_string(InsidePreview) << "_" << endl;
+	if (InsidePreview == 1) {
+		cout << "InsidePreview" << endl;
+	}
 	cout << "Thanks your using" << endl;
+	cout << "Copyright FoxaXu@" << endl;
 	cout << endl;
 	return;
 }
@@ -122,8 +126,6 @@ void StartRunMode() {
 			return;
 		}
 		mdfolder(TempCAPT);
-		string newfile = TempCAPT + "\\RunScript.ca";
-		CopyFile(LoadFile.c_str(), newfile.c_str(), 0);
 		ShellExecute(0, "open", CaOutage.c_str(), TempCAPT.c_str(), 0, SW_SHOW);
 		
 		string NRootLock = TempCAPT + "\\session.lock";
@@ -133,7 +135,8 @@ void StartRunMode() {
 		RootLockS.open(NRootLock);
 		RootLockS << "Lock" << endl;
 
-		int backdt = ScriptRun(newfile, vercode, 3, 1, Nsafemark);
+		ResLoadFile = LoadFile;
+		int backdt = ScriptRun(LoadFile, vercode, 3, 1, Nsafemark);
 		SetCurrentDirectory(PATH.c_str());
 		if (backdt == 1) {
 			cout << "------------------------------------------------------------" << endl;

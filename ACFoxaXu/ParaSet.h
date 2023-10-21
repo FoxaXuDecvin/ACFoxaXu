@@ -15,4 +15,4 @@ string $PCPATH = getenv("path");
 string $PCTemp = getenv("temp");
 string $PCSYSDRV = getenv("systemdrive");
 
-string $ScriptPath;
+string ResLoadFile;
