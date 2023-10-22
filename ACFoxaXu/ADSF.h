@@ -943,7 +943,7 @@ BackRollResCMD:
 	}
 
 	//MAIN
-	if (ReadSource == "CALCIUM.MAIN") {
+	if (ReadSource == "Include") {
 		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
 		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
 		if (CaCMDS == "") {
