@@ -16,3 +16,14 @@ string $PCTemp = getenv("temp");
 string $PCSYSDRV = getenv("systemdrive");
 
 string ResLoadFile;
+
+string TempChart;
+
+string TempCharB;
+
+string RunPara;
+
+int ProcessLine;
+
+int MainMode = 0;
+int MainRoll = 0;

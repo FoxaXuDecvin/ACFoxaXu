@@ -42,6 +42,7 @@ int vercode = atoi(verinfor.c_str());
 string Version = readini(CONFIGROOT,"Version","CodeName");
 string ComVer = readini(CONFIGROOT, "Version", "ComVer");
 string KernelFile = getselfpath() + "\\" + readini(CONFIGROOT, "Version", "Kernel");
+string CAHROOT = StrTrans(readini(CONFIGROOT, "default", "CAHPATH"));
 
 string VarSpace = "varspace;";
 int VarSpaceMax;
@@ -530,16 +531,22 @@ int DLLUpdate(string DLLNAMEX) {
 // 2 CrashScript
 // >2 Skip Goto
 int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode) {
-
-	string ReadCMD = cutlineblockA(CaCMDS, " ", 1);
-	string ReadSourceX = cutlineblockA(ResCMD, " ", 1);
-	string ReadSource = CleanAuto(ReadSourceX, " ");
+	string ReadCMD, ReadSourceX, ReadSource;
+	//cout << "CaCMDS :  _" << CaCMDS << "_" << endl;
+	if (MainMode == 1) {
+		if (MainRoll == 0) {
+			goto MAINCalciumLong;
+		}
+	}
+	MainModeRollCMD:
+	ReadCMD = cutlineblockA(CaCMDS, " ", 1);
+	ReadSourceX = cutlineblockA(ResCMD, " ", 1);
+	ReadSource = CleanAuto(ReadSourceX, " ");
 	if (ReadCMD == "") {
 		return 0;
 	}
 
-	BackRollResCMD:
-	//cout << "Read CMD :   _" << ReadCMD << "_" << endl;
+BackRollResCMD:
 	if (ReadCMD == "NUL") {
 		ReadSource = ResCMD;
 		ReadCMD = ResCMD;
@@ -552,13 +559,13 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 		CaCMDS = CleanAuto(CaCMDS, "var");
 
 		if (ResCMD == "") {
-			cout << ReadCMD <<" Command:  " << endl;
+			cout << ReadCMD << " Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     var <var> = <data>" << endl;
 			WarningRecord++;
 			return 0;
 		}
-		if (checkChar(ResCMD, "=")==0) {
+		if (checkChar(ResCMD, "=") == 0) {
 			cout << ReadCMD << " Command:  " << endl;
 			cout << "If you using Shell Mode. You can use \"list varspace\" to Show All var" << endl;
 			cout << " COMMAND :     var <var> = <data>" << endl;
@@ -711,7 +718,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			ErrorRecord++;
 			return 2;
 		}
-		
+
 		//cout << "Run DLL Start" << endl;
 		int DLLOutage = DllLoad(DLLNAME, DCMD);
 		//cout << "Run DLL End" << endl;
@@ -838,7 +845,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 				return 0;
 			}
 			string dllrootset = dllrootsetN + "\\" + ReadP;
-			
+
 			dllgetver = dllCurrVersion(dllrootset);
 
 			if (dllgetver == 404) {
@@ -848,7 +855,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			else {
 				cout << "DLL :  _" << ReadP << "_.  Version :  _" << to_string(dllgetver) << "_." << endl;
 			}
-			
+
 			LRRP++;
 			RPTotal++;
 			goto BackReadDLLV;
@@ -875,7 +882,7 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			cout << endl;
 			return 0;
 		}
-		
+
 		CaCMDS = HeadSpaceClean(CaCMDS);
 		CaCMDS = cutlineblockA(CaCMDS, "\"", 1);
 		if (CaCMDS == "NUL") {
@@ -929,13 +936,55 @@ int RollCMD(string CaCMDS, string ResCMD, string File, int CURRLINE, int vercode
 			return 0;
 		}
 		else {
-			cout <<"DLL Check Update Complete :  " << CaCMDS << endl;
+			cout << "DLL Check Update Complete :  " << CaCMDS << endl;
 			return 0;
 		}
 		return 0;
 	}
 
-	return 1;
+	//MAIN
+	if (ReadSource == "CALCIUM.MAIN") {
+		CaCMDS = CleanAuto(CaCMDS, ReadCMD + " ");
+		CaCMDS = CleanAuto(CaCMDS, ReadCMD);
+		if (CaCMDS == "") {
+			cout << "Main is not set" << endl;
+			ErrorRecord++;
+			return 0;
+		}
+		TempChart = PartRead(CaCMDS, "(", ")");
+		TempCharB = SizeRead(TempChart, 3);
+		if (TempCharB == "var") {
+			//Create Start Var Parameter
+			varspaceadd(PartRead(TempChart, "&", "%"), RunPara);
+		}
+		if (checkChar(CaCMDS, "{") == 1) {
+			if (checkChar(CaCMDS, "}") == 1) {
+				TempChart = PartRead(CaCMDS, "{", "}");
+				TempCharB = TransVar(TempChart);
+				int rtcd = RollCMD(TempCharB, TempChart, File, CURRLINE, vercode);
+				return rtcd;
+			}
+			else {
+				//BLOCK LONG
+			MAINCalciumLong:
+				ProcessLine++;
+				MainMode = 1;
+				ResCMD = LineReader(File, ProcessLine);
+				if (checkChar(ResCMD, "}") == 0) {
+					CaCMDS = TransVar(ResCMD);
+					MainRoll = 1;
+					int BitCmd = RollCMD(CaCMDS, ResCMD, File, CURRLINE, vercode);
+					return BitCmd;
+				}
+				else {
+					MainRoll = 0;
+					MainMode = 0;
+					return 0;
+				}
+			}
+		}
+		return 1;
+	}
 }
 
 void CaRootLoaderX() {
@@ -953,8 +1002,7 @@ void CaRootLoaderX() {
 //rootlockmode 1-open 0-off
 //Return Num :  1=Exception 0=Normal
 int ScriptRun(string File, int vercode, int startline, int rootlockmode, string unsafelock) {
-	ReTryRollScript:
-	int readline = startline;
+	ProcessLine = startline;
 	string ReadPoint;
 	string AfterTranslate;
 	string ErrCode;
@@ -962,10 +1010,9 @@ int ScriptRun(string File, int vercode, int startline, int rootlockmode, string 
 	string RunPathSet = CutFilePath(ResLoadFile);
 
 	SetCurrentDirectory(RunPathSet.c_str());
-	cout << "Set Local Path :  _" << RunPathSet << "_" << endl;
 
 RollBackScript:
-	ReadPoint = LineReader(File, readline);
+	ReadPoint = LineReader(File, ProcessLine);
 	if (ReadPoint == "ReadFailed") {
 		cout << "Calcium Run Script Error" << endl;
 		cout << "Path :  " << RunPathSet << endl;
@@ -974,11 +1021,11 @@ RollBackScript:
 		return 0;
 	}
 	if (ReadPoint == "") {
-		readline++;
+		ProcessLine++;
 		goto RollBackScript;
 	}
 	if (checkChar(ReadPoint, "$") == 1) {
-		readline++;
+		ProcessLine++;
 		goto RollBackScript;
 	}
 	if (ReadPoint == "overline") {
@@ -987,6 +1034,8 @@ RollBackScript:
 		ErrorRecord++;
 		return 1;
 	}
+
+	//cout << "ReadPoint :  _" << ReadPoint << "_" << endl;
 
 	Tercmd = cutlineblockA(ReadPoint, " ", 1);
 
@@ -998,14 +1047,14 @@ RollBackScript:
 			cpause(Outlang("lang.public.PAK"));
 			return 0;
 		}
-		readline++;
+		ProcessLine++;
 		goto RollBackScript;
 	}
 	if (Tercmd == "#onlyadmin") {
 		//cout << "Check Administrator" << endl;
 		if (testAdminA() == 1) {
 			cout << "Run On Administrator" << endl;
-			readline++;
+			ProcessLine++;
 			goto RollBackScript;
 		}
 		else {
@@ -1019,7 +1068,7 @@ RollBackScript:
 		//cout << "Loading Calcium Root" << endl;
 		CaRootLoaderX();
 		//cout << "Load OK" << endl;
-		readline++;
+		ProcessLine++;
 		goto RollBackScript;
 	}
 	//cout << "TerCMD :  _" << Tercmd << "_" << endl;
@@ -1028,7 +1077,7 @@ RollBackScript:
 	if (rootlockmode == 1) {
 		writeini(unsafelock, "Run", "Command", ReadPoint);
 		writeini(unsafelock, "Run", "Script", File);
-		writeini(unsafelock, "Run", "Line", to_string(readline));
+		writeini(unsafelock, "Run", "Line", to_string(ProcessLine));
 		writeini(unsafelock, "Run", "FullVersion", Version + "~" + to_string(vercode));
 		writeini(unsafelock, "Run", "VarSpace", VarSpace);
 		writeini(unsafelock, "Run", "DllregList", DLLRegList);
@@ -1041,7 +1090,7 @@ RollBackScript:
 	//cout << "Start Roll CMD" << endl;
 	//cout << "----------------------------------------------------------------------------------------------------" << endl;
 	//cout << "Command :  _" << AfterTranslate << "_ .  ResCommand :   _" << ReadPoint << "_" << endl;
-	int cmrd = RollCMD(AfterTranslate, ReadPoint, File, readline, vercode);
+	int cmrd = RollCMD(AfterTranslate, ReadPoint, File, ProcessLine, vercode);
 	//cout << "CMRD :  _" << to_string(cmrd) << "_" << endl;
 	//cout << "----------------------------------------------------------------------------------------------------" << endl;
 	//cout << "VarSpace :  " << VarSpace << endl;
@@ -1066,23 +1115,23 @@ RollBackScript:
 		return 0;
 	}
 	if (cmrd == 1) {
-		cout << "Unknown Command :  " << ReadPoint << "  Line :  " << to_string(readline) << endl;
+		cout << "Unknown Command :  " << ReadPoint << "  Line :  " << to_string(ProcessLine) << endl;
 		ErrorRecord++;
 	}
 	if (cmrd == 2) {
 		cout << endl;
 		cout << "Script is Crash." << endl;
-		cout << "On The :  " << to_string(readline) << " .  COMMAND :  " << ReadPoint << endl;
+		cout << "On The :  " << to_string(ProcessLine) << " .  COMMAND :  " << ReadPoint << endl;
 		cout << "This Problem is happend by Script" << endl;
 		cout << endl;
 		return 1;
 	}
 	if (cmrd > 2) {
-		readline = cmrd;
+		ProcessLine = cmrd;
 		goto RollBackScript;
 	}
 
-	readline++;
+	ProcessLine++;
 	goto RollBackScript;
 }
 

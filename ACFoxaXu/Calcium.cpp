@@ -240,6 +240,10 @@ BackGetCommand:
 		unregcalcium();
 		return 0;
 	}
+	if (checkChar(curpmd, "-p$") == 1) {
+		Effcode = 1;
+		RunPara = curpmd;
+	}
 
 	if (ReadLN == 0){}
 	else {

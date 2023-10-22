@@ -1,33 +1,20 @@
-#include"D:\CppHeader\WinReg.h"
-#include"DLLApi.h"
+#include"ADSF.h"
 
 using namespace std;
 
 int main() {
-	BKsO:
-	system("cls");
-	cout << "Type Debug DLL" << endl;
-	cout << "DLL >";
-	string URL;
-	getline(cin, URL);
-	cout << "Type Debug DLL Command" << endl;
-	cout << "DLLCMD >";
-	string URLCMD;
-	getline(cin, URLCMD);
+	BackRoll:
+	string StartInfo = "123456789";
+	
+	string abp;
+	cout << "Select Read Size: ";
 
+	getline(cin, abp);
 
-	cout << "---------------------------------------------------------------" << endl;
-	int a =DllLoad(URL,URLCMD);
-	if (a == 1) {
-		cout << "No" << endl;
-	}
-	else {
-		cout << "Yes" << endl;
-	}
-	cout << "---------------------------------------------------------------" << endl;
-	if (a == 1) {
-		MessageBox(0, "Dll Load Failed. ", "DLL API", MB_ICONERROR | MB_OK);
-	}
-	cpause("Press any key to Back");
-	goto BKsO;
+	cout << SizeRead(StartInfo, atoi(abp.c_str())) << endl;
+	cout << endl;
+
+	goto BackRoll;
+	return 0;
+
 }
